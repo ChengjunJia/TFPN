@@ -1,3 +1,14 @@
+# 排除Stanford规则集的较大数据
+
+Rule_analysis/ATPG/atpg/data/
+Rule_analysis/ATPG/utils/
+*.tf
+Rule_analysis/Pronto/configure-purdue/
+Rule_analysis/Pronto/stconfig/
+Rule_analysis/Pronto/st/
+Rule_analysis/Pronto/i2/
+*.class
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

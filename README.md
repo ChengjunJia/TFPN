@@ -11,6 +11,7 @@ Test For Future Programmable Network, based on the [INT_LABEL](https://github.co
 使用Dockerfile来配置相关环境，基于p4lang/p4app的官方BMv2镜像，安装Redis数据库并做相关配置(拷贝redis.conf文件以覆盖redis数据库配置)。注意在redis.conf配置中修改`unixsocket /var/run/redis/redis-server.sock`以和INT_LABEL原生的redis数据库sock一致；同时修改`daemonize yes`以开启redis默认后台运行。
 
 进入docker的shell后，运行以下命令分别运行redis数据库、检测redis数据库和运行mininet测试(clos.py里面是详细的mininet网络配置)。
+
 ```
 redis-server /etc/redis.conf
 redis-cli config set notify-keyspace-events KEA
@@ -28,7 +29,14 @@ python clos.py
 
 
 
-## Majhong
+## 网络测试路径生成
 
+Rule_analysis目录下，存放已有的ATPG(CONEXT'12)和Pronto(ICDCS'17)工作；正在汇总补充AP-Keep和Mahjong工作。
+
+TODO: 所有程序需要统一输入输出和存储方式。
+
+## 其他相关论文
+
+使用Tofino当做测试仪, HyperTester: High-performance Network Testing Driven by Programmable Switches.
 
 

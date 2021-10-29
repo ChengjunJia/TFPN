@@ -1,0 +1,158 @@
+package reachmatrix;
+
+import java.util.*;
+
+/**
+* seems that the usage of nodeset is too expensive
+*/
+public class MyPath {
+	ArrayList<Link> path;
+	//maintained by update
+	int length;
+	Node start;
+	Node end;
+	HashSet<Node> nodeset;
+
+	/**
+	 * maintaining length, start, end
+	 */
+	void update()
+	{
+		length = path.size();
+		if(length == 0)
+		{
+			start = null;
+			end = null;
+		}else
+		{
+			start = path.get(0).getn1();
+			end = path.get(length - 1).getn2();
+		}
+	}
+
+	/**
+	 * 
+	 */
+	void initializeNodeSet()
+	{
+		nodeset = new HashSet<Node>();
+		for(int i = 0; i < length; i ++)
+		{
+			nodeset.add(path.get(i).getn1());
+		}
+		nodeset.add(end);
+	}
+
+	/**
+	 * add new nodes to the node set
+	 */
+	void addToNodeSet(ArrayList<Link> newlinks)
+	{
+		for(int i = 0; i < newlinks.size(); i ++)
+		{
+			nodeset.add(newlinks.get(i).getn2());
+		}
+	}
+
+	/**
+	 * whether links in path are organized correctly 
+	 * @return
+	 */
+	public boolean validate()
+	{
+		for(int i = 1; i < path.size(); i ++)
+		{
+			if(path.get(i-1).getn2() != path.get(i).getn1())
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public MyPath(ArrayList<Link> path)
+	{
+		this.path = path;
+		update();
+		initializeNodeSet();
+	}
+	
+	public MyPath(MyPath mp)
+	{
+		this.path = (ArrayList<Link>) mp.path.clone();
+		update();
+		initializeNodeSet();
+	}
+
+	public MyPath(Link l)
+	{
+		path = new ArrayList<Link> ();
+		path.add(l);
+		update();
+		initializeNodeSet();
+	}
+
+	/**
+	 * the added link is at the end of the path
+	 */
+	public void addLink(Link l)
+	{
+		path.add(l);
+		update();
+		//only add one node
+		nodeset.add(end);
+	}
+
+	/**
+	 * the concatenated path is at the end of the path
+	 * @param mp
+	 */
+	public void concatenatePath(MyPath mp)
+	{
+		ArrayList<Link> mppath = mp.path;
+		for(int i = 0; i < mppath.size(); i ++)
+		{
+			this.path.add(mppath.get(i));
+		}
+		update();
+		addToNodeSet(mppath);
+	}
+
+	/**
+	 * check whether a given node is on the path
+	 */
+	public boolean onPath(Node n)
+	{
+		if(nodeset.contains(n))
+			return true;
+		return false;
+	}
+
+	public boolean onPath(MyPath mp)
+	{
+		HashSet<Node> mpset = mp.nodeset;
+		for(Node mpnode : mpset)
+		{
+			if(mpnode != end) // end node of the current path should be the in the incoming path
+				if(onPath(mpnode))
+					return true;
+		}
+		return false;
+	}
+
+	public String toString()
+	{
+		String pathString = new String();
+		for(int i = 0; i < length; i ++)
+		{
+			pathString  = pathString + " " + path.get(i).getn1();
+		}
+		if(length > 0)
+		{
+			pathString = pathString + " " + end;
+		}
+		return pathString;
+	}
+
+
+}

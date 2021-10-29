@@ -15,11 +15,6 @@ def calculate_coverage(r):
     else: 
         return str(result)
     
-
-    
-
-    
-    
 if __name__=='__main__':
     with open('../TIME_OUT','r') as f:
         TIME_OUT=int(f.readline())

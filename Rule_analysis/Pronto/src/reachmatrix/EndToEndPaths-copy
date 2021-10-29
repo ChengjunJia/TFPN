@@ -1,0 +1,403 @@
+package reachmatrix;
+
+import java.io.*;
+import java.util.*;
+
+public class EndToEndPaths {
+
+	ReachGraph rg;
+	int nodenumused; // now only use subnet
+	Node[] allnodes; // all nodes in the network, the first part is node used.
+
+	int srcnodeind; // node index used to generate all paths from this node
+	//ArrayList<MyPath> [] currentpathvector; // to store these paths
+	String [] pathfile; // store paths separately in folders
+	String [] newpathfile;
+	static String pathfoldername = "./pv/";
+
+	static String datafoldername = "./end2enddata/";
+	String [] tracefiles; // to store acls on these paths
+	String [] timefiles; // to store time to calculate reachability along these paths
+	String [] lengthfiles; // has to columns, the first one has the lengths of paths, the second
+	// has the numbers of these paths
+	long [] pathnum; // record numbers of current paths
+	double [] timeused; // record time
+
+
+
+	public EndToEndPaths(ReachGraph rg) throws IOException
+	{
+		this.rg = rg;
+		Node[] nodeused = (Node[]) rg.subnets.values().toArray(new Node[0]);
+		nodenumused = nodeused.length;
+
+		allnodes = new Node[nodeused.length + rg.routers.size()];
+		for(int i = 0; i < nodeused.length; i ++)
+		{
+			allnodes[i] = nodeused[i];
+		}
+		Node[] routerset = (Node[]) rg.routers.values().toArray(new Node[0]);
+		for(int i = nodeused.length; i < nodeused.length + routerset.length; i ++)
+		{
+			allnodes[i] = routerset[i - nodeused.length];
+		}
+
+		// create a folder to store data and trace
+		//new File(datafoldername).mkdir();
+		clearFolder(datafoldername);
+
+		// create a folder to store path vectors
+		//new File(pathfoldername).mkdir();
+		clearFolder(pathfoldername);
+		// set up file names
+		pathfile = new String[allnodes.length];
+		newpathfile = new String[allnodes.length];
+		for(int i = 0; i < pathfile.length; i ++)
+		{
+			pathfile[i] = pathfoldername + i;
+			newpathfile[i] = pathfoldername + "new" + i;
+		}
+
+		// path numbers
+		pathnum = new long[allnodes.length];
+
+	}
+	
+	/**
+	 * if folder name does not exist, then create the folder
+	 * if exists, then delete all files in the folder
+	 */
+	private void clearFolder(String foldername)
+	{
+		File folderLocation = new File(foldername);
+		if(folderLocation.exists())
+		{
+			File[] files = folderLocation.listFiles();
+			if(files == null)
+			{
+				System.err.println(foldername + " is not a directory!");
+				System.exit(1);
+			}else
+			{
+				for(File f: files)
+				{
+					if(!f.delete())
+					{
+						System.err.println("File " + f.getName() + " cannot be deleted!");
+						System.exit(1);
+					}
+				}
+			}
+		}else
+		{
+			folderLocation.mkdir();
+		}
+	}
+
+	/**
+	 * set pathnum to zeros
+	 */
+	private void clearpathnum()
+	{
+		for(int i = 0; i < pathnum.length; i ++)
+		{
+			pathnum[i] = 0;
+		}
+	}
+
+	/**
+	 * 
+	 * @param ind - to generate all paths from ind
+	 * @throws FileNotFoundException 
+	 */
+	private void setExperiment(int ind) throws FileNotFoundException
+	{
+		srcnodeind = ind;
+
+		tracefiles = new String[nodenumused];
+		timefiles = new String[nodenumused];
+		lengthfiles = new String[nodenumused];
+		for(int i = 0; i < nodenumused; i ++)
+		{
+			tracefiles[i] = datafoldername + srcnodeind + "-" + i;
+			timefiles[i] = datafoldername + srcnodeind + "-" + i + ".time";
+			lengthfiles[i] = datafoldername + srcnodeind + "-" + i + ".length";
+		}
+
+		timeused = new double[nodenumused];
+		for(int i = 0; i < timeused.length; i ++)
+		{
+			timeused[i] = 0.0;
+		}
+	}
+
+	private void closeExperiment() throws IOException
+	{
+		for(int i = 0; i < nodenumused; i ++)
+		{
+			//close trace file
+			//tracefiles[i].close();
+			// close length files
+			//lengthfiles[i].close();
+			//write the computation time
+			PrintWriter pw = new PrintWriter(new FileWriter(timefiles[i], true));
+			pw.println(timeused[i]);
+			//timefiles[i].print(timeused[i]);
+			//timefiles[i].close();
+			pw.close();
+		}
+		System.out.println("finish logging from node " + srcnodeind);
+	}
+	
+	public void calculateEndtoEndpath() throws IOException, ClassNotFoundException
+	{
+		for(int i = 0; i < nodenumused; i ++)
+		{
+			calculatepathfrom(i);
+		}
+	}
+
+
+	public void calculatepathfrom(int nodeind) throws IOException, ClassNotFoundException
+	{
+		setExperiment(nodeind);
+		/*
+		currentpathvector = new ArrayList[allnodes.length];
+		for(int i = 0; i < currentpathvector.length; i ++)
+		{
+			currentpathvector[i] = new ArrayList<MyPath>();
+		}*/
+
+		// initialize
+		clearpathnum();
+		for(int j = 0; j < allnodes.length; j ++)
+		{
+			ArrayList<MyPath> mps = new ArrayList<MyPath> ();
+			if(j != srcnodeind)
+			{
+				if(rg.getGraph().containsEdge(allnodes[srcnodeind], allnodes[j]))
+				{
+					Link lnodeindtoj = rg.getGraph().getEdge(allnodes[nodeind], allnodes[j]);
+					//currentpathvector[j].add(new MyPath(lnodeindtoj));
+					mps.add(new MyPath(lnodeindtoj));
+					//System.out.println("edge to "+j +": " + lnodeindtoj);
+				}
+			}
+			pathnum[j] = mps.size();
+			Pathset.saveToFile(pathfile[j], mps);
+		}
+		//printPathvector();
+		System.out.println("initial path number: " + getpathnum());
+		//ArrayList<MyPath> test = Pathset.readFromFile(pathfile[1576]);
+		//System.out.println(test.size());
+
+
+		//begin to iterate
+		for(int k = 0; k < allnodes.length - 2; k ++)
+		//for(int k = 0; k < 6; k ++)
+		{
+
+			//ArrayList<MyPath>[] newpathvector = 
+			extendpath();
+			// store a paths of longer length
+			//currentpathvector = newpathvector;
+			System.out.println("from node " + srcnodeind + " round " + k + ": " + getpathnum());
+			updatefiles();
+			//printPathvector();
+		}
+
+		closeExperiment();
+
+
+	}
+
+	private void recordlength(int nodeind, ArrayList<MyPath> mps) throws IOException
+	{
+		if(mps.isEmpty())
+		{
+			return;
+		}
+
+		PrintWriter pw = new PrintWriter(new FileWriter(lengthfiles[nodeind], true));
+		pw.print(mps.get(0).getpath().size());
+		pw.print(" " + mps.size());
+		pw.println();
+		pw.close();
+	}
+
+	/**
+	 * 
+	 * @param mps - given an array list of paths, 
+	 * @return - record the calculation time of the reachability of all these paths (in ms).
+	 */
+	private void evaluatetime(int nodeind, ArrayList<MyPath> mps)
+	{
+		if(mps.isEmpty())
+		{
+			// nothing added
+			return;
+		}
+
+		timeused[nodeind] = timeused[nodeind] + evaluatetime_I(mps, 1);
+	}
+
+	/**
+	 * do it in an adaptive way
+	 * @param mps
+	 * @param repeat
+	 * @return
+	 */
+	private double evaluatetime_I(ArrayList<MyPath> mps, int repeat)
+	{
+		long start = System.nanoTime();
+		for(int i = 0; i < repeat; i ++)
+		{
+			for(int j = 0; j < mps.size(); j ++)
+			{
+				Link resl = ReachUtil.pathConcatenation(mps.get(j).getpath());
+			}
+		}
+		long end = System.nanoTime();
+		if(end - start < 10)
+		{
+			return evaluatetime_I(mps, repeat*10);
+		}else
+		{
+			return (end - start)/1000000.0;
+		}
+
+	}
+
+	/**
+	 * try to append paths in currentpathvector by one link
+	 * @return a new path vector
+	 * @throws ClassNotFoundException 
+	 * @throws IOException 
+	 */
+	private void extendpath() throws IOException, ClassNotFoundException
+	{
+		/*ArrayList<MyPath> [] newpathvector = new ArrayList [allnodes.length];
+		for(int i = 0; i < newpathvector.length; i ++)
+		{
+			newpathvector[i] = new ArrayList<MyPath>();
+		}*/
+
+		clearpathnum();
+		for (int i = 0; i < allnodes.length; i ++)
+		{
+			ArrayList<MyPath> newmps = new ArrayList<MyPath>();
+			//consider node srcnodeind to node i
+			if(i != srcnodeind)
+				for (int j = 0; j < allnodes.length; j ++)
+				{
+					if(i != j && j != srcnodeind)
+						//check whether node j - node i can be used to extended path
+						if(rg.getGraph().containsEdge(allnodes[j], allnodes[i]))
+						{
+							// to append mp2 is a link from j to i
+							MyPath mp2 = new MyPath(rg.getGraph().getEdge(allnodes[j], allnodes[i]));
+							// get paths to node j
+							ArrayList<MyPath> mps = Pathset.readFromFile(pathfile[j]);
+
+							//for(int k = 0; k < currentpathvector[j].size(); k++)
+							for(int k = 0; k < mps.size(); k++)
+							{
+								// mp1 is from nodeind to j
+								//MyPath mp1 = currentpathvector[j].get(k);
+								MyPath mp1 = mps.get(k);
+								//System.out.println("mp1: " + mp1);
+								//System.out.println("mp2: " + mp2);
+
+								if(mp1.canConcatenate(mp2))
+								{
+									MyPath newmp = new MyPath(mp1);
+									newmp.concatenatePath(mp2);
+									//newpathvector[i].add(newmp);
+									newmps.add(newmp);
+									//System.out.println("found: " + newmp);
+								}
+							}
+						}
+				}
+			pathnum[i] = newmps.size();
+			Pathset.saveToFile(newpathfile[i], newmps);
+			if(i < nodenumused)
+			{
+				//consider paths from subnet to subnet
+				evaluatetime(i, newmps);
+				recordtrace(i, newmps);
+				recordlength(i, newmps);
+			}
+		}
+
+
+		//return newpathvector;
+	}
+
+	private void recordtrace(int nodeind, ArrayList<MyPath> mps) throws IOException
+	{
+		PrintWriter pw = new PrintWriter(new FileWriter(tracefiles[nodeind], true));
+		for(int k = 0; k < mps.size(); k ++)
+		{
+			ArrayList<Link> currentLinks = mps.get(k).getpath();
+			for(int i = 0; i < currentLinks.size(); i ++)
+			{
+				Link l = currentLinks.get(i);
+				if(l.getACLId() != -1)
+				{
+					pw.print(l.getACLId() + " ");
+				}else{
+					/*-----------------*/
+					System.out.println(l.getkind());
+				}
+			}
+			pw.println();	
+		}
+		pw.close();
+	}
+
+	/**
+	 * delete old path files
+	 * move new path files to path files
+	 */
+	private void updatefiles()
+	{
+		for(int i = 0; i < pathfile.length; i ++)
+		{
+			File oldf = new File(pathfile[i]);
+			File newf = new File(newpathfile[i]);
+
+			oldf.delete();
+			newf.renameTo(oldf);
+		}
+	}
+
+
+	/**
+	 * 
+	 * @return - get the total path number in currentpathvector
+	 */
+	public long getpathnum()
+	{
+		long pathnumber = 0;
+		/*for(int i = 0; i < currentpathvector.length; i ++)
+		{
+			pathnumber = pathnumber + currentpathvector[i].size();
+		}*/
+
+		for(int i = 0; i < pathnum.length; i ++)
+		{
+			pathnumber = pathnumber + pathnum[i];
+		}
+		return pathnumber;
+	}
+
+
+	public static void main(String[] args) throws IOException, ClassNotFoundException
+	{
+		ReachGraph rg = new ReachGraph("purdue.ser", "purdue-BDDAP.ser");
+		EndToEndPaths e2e = new EndToEndPaths(rg);
+
+		e2e.calculateEndtoEndpath();
+	}
+}

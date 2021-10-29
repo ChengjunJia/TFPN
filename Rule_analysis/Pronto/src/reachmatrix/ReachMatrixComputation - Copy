@@ -1,0 +1,286 @@
+package reachmatrix;
+
+import java.util.*;
+
+import org.jgrapht.GraphPath;
+import org.jgrapht.alg.DijkstraShortestPath;
+import org.jgrapht.graph.DefaultDirectedGraph;
+
+import reachmatrix.Link.apkind;
+
+public class ReachMatrixComputation {
+
+	ReachGraph rg;
+	int size; // how large is the reachability matrix
+	int round; // how many round to perform the test
+	ArrayList<MyPath> [][] pathmatrix; //pathmatrix result used in one test
+
+	public static enum testmode{
+		random, full;
+	}
+
+	testmode tm;
+
+	public ReachMatrixComputation(ReachGraph rg)
+	{
+		this.rg = rg;
+	}
+
+	public void setExperiment(int size, int round, testmode mode)
+	{
+		this.size = size;
+		this.round = round;
+		this.tm = mode;
+	}
+
+	public ReachMatrixComputation(ReachGraph rg, int size, int round, testmode mode)
+	{
+		this(rg);
+		this.setExperiment(size, round, mode);
+	}
+
+	/**
+	 * randomly select 'size' subnets out from all subnets.
+	 * @return an ordered set
+	 */
+	public Node[] select()
+	{
+		if(size >= rg.subnets.size())
+		{
+			System.err.println("do not have enough subnets to choose!");
+			System.exit(1);
+		}
+
+		int[] selectedId = new int[size];
+		StaticReachabilityAnalysis.Sample.GetSample(size, rg.subnets.size(), selectedId);
+		Arrays.sort(selectedId);
+
+		/*
+		 * pull the node needed 
+		 */
+		Node[] subnetselected = new Node [size]; 
+		Node [] allsubnets = (Node[]) rg.subnets.values().toArray(new Node[0]);
+		for(int i = 0; i < size; i++)
+		{
+			subnetselected[i] = allsubnets[selectedId[i]];
+		}
+
+		return subnetselected;
+	}
+
+	public void oneround()
+	{
+		// rm stores the link information between i and j
+		Link [][] rm = new Link[size][size];
+		// rmreach stores the reachability information
+		Link [][] rmreach = new Link[size][size];
+
+		Node[] selected = select();
+
+		/*
+		 * set up the matrix
+		 * not so efficient for now
+		 */
+		for(int i = 0; i < size; i ++)
+			for(int j = 0; j < size; j ++)
+			{
+				Link l = null;
+				Node src = selected[i];
+				Node dst = selected[j];
+
+				if(i == j)
+				{
+					// this is by default
+					// new a link, name is not important
+					l = new Link(src, dst, null);
+					l.setap(Link.apkind.allowall, null);
+				}else{
+					// need to calculate the shortest path
+					DijkstraShortestPath<Node, Link> dsp = new DijkstraShortestPath<Node, Link>(rg.getGraph(), src, dst);
+					GraphPath<Node,Link> path = dsp.getPath();
+					if(path == null)
+					{
+						// the two subnets are disconnected
+						l = new Link(src, dst, null);
+						l.setap(Link.apkind.denyall, null);
+					}else
+					{
+						l = ReachUtil.pathConcatenation(path);
+					}
+
+				}
+				rm[i][j] = l;
+
+			}
+		System.out.println("set up initial reachability matrix");
+		//make a virtual graph
+		DefaultDirectedGraph<Node, Link> vnetwork = new DefaultDirectedGraph<Node, Link>(Link.class);
+		for(int i = 0; i < size; i ++)
+		{
+			vnetwork.addVertex(selected[i]);
+		}
+		for(int i = 0; i < size; i ++)
+			for(int j = 0; j < size; j ++)
+			{
+				if(i != j)
+				{
+					if(rm[i][j].getkind() != Link.apkind.denyall)
+					{
+						vnetwork.addEdge(selected[i], selected[j], rm[i][j]);
+					}
+				}
+			}
+		System.out.println("virtual network is set up");
+
+		long start = System.currentTimeMillis();
+		// each element in pathmatrix is an arraylist of graph paths
+		// initialize
+		pathmatrix = new ArrayList [size][size];
+		//store the longest path during calculation
+		ArrayList<MyPath>[][] longestmatrix = new ArrayList [size][size];
+		for(int i = 0; i < size; i ++)
+			for(int j = 0; j < size; j ++)
+			{
+				if(i != j)
+				{
+					pathmatrix[i][j] = new ArrayList<MyPath> ();
+					longestmatrix[i][j] = new ArrayList<MyPath> ();
+					if(vnetwork.containsEdge(selected[i], selected[j]))
+					{
+						Link lij = vnetwork.getEdge(selected[i], selected[j]);
+						pathmatrix[i][j].add(new MyPath(lij));
+						longestmatrix[i][j].add(new MyPath(lij));
+					}
+				}
+			}
+		//printPathmatrix();
+
+
+		//begin to iterate
+		for(int k = 0; k < size - 2; k ++)
+		{
+			//each k-loop, calculate newmatrix, newmatrix store longest paths which are newly calculated
+			ArrayList<MyPath> [][] newmatrix = new ArrayList [size][size];
+			for(int i = 0; i < size; i ++)
+				for(int j = 0; j < size; j ++)
+				{
+					if(i != j)
+					{
+						newmatrix[i][j] = new ArrayList<MyPath>();
+						//i--l--j
+						for(int l = 0; l < size; l ++)
+						{
+							if((l!=i) && (l!=j))
+							{
+								if(vnetwork.containsEdge(selected[l], selected[j]))
+								{
+									MyPath mp2 = new MyPath(vnetwork.getEdge(selected[l], selected[j]));
+
+									for(int m1 = 0; m1 < longestmatrix[i][l].size(); m1 ++)
+									{
+										MyPath mp1 = longestmatrix[i][l].get(m1);
+										if(!mp1.onPath(mp2))
+										{
+											//this means that no loop
+											MyPath newmp = new MyPath(mp1);
+											newmp.concatenatePath(mp2);
+											newmatrix[i][j].add(newmp);
+											/*
+											System.out.println(i + " " + j);
+											System.out.println(mp1.length);
+											System.out.println(mp2.length);
+											System.out.println(newmp.length);
+											System.out.println(newmp);
+											*/
+										}
+									}
+								}
+								
+							}
+						}
+					}
+				}
+			//update pathmatrix, longestmatrix
+			longestmatrix = newmatrix;
+			for(int i = 0; i < size; i ++)
+				for(int j = 0; j < size; j ++)
+				{
+					if(i != j)
+					{
+						pathmatrix[i][j].addAll(longestmatrix[i][j]);
+					}
+				}
+			System.out.println(k);
+		}
+		long end = System.currentTimeMillis();
+
+		/**
+		 * the following code only computes reachability matrix
+		 * 
+		//initialize rmreach, set it identical to rm
+		for(int i = 0; i <  size; i ++)
+			for(int j = 0; j < size; j ++)
+			{
+				rmreach[i][j] = new Link(rm[i][j]);
+				//System.out.println(rmreach[i][j].printAP());
+			}
+
+		//time it
+		long start = System.currentTimeMillis();
+		// do the algorithm in Xie's paper
+		for(int j = 0; j < size; j ++)
+			for(int m = 1; m <size - 1; m ++)
+			{
+				for(int i = 0; i < size; i ++)
+				{
+					Link rijprime = new Link(selected[i], selected[j], null);
+					rijprime.setap(apkind.denyall, null);
+
+					for(int k = 0; k < size; k ++)
+					{
+						Link fik = new Link(rm[i][k]);
+						fik.concatenateLink(rmreach[k][j]);
+						rijprime.combineLink(fik);
+
+					}
+					rmreach[i][j] = rijprime;
+				}
+			}
+		long end = System.currentTimeMillis();
+		 */
+
+		System.out.println((end - start)/1000.0 + "s");
+		printPathmatrix();
+		
+
+	}
+
+	/**
+	 * print # of paths for each node pair
+	 */
+	public void printPathmatrix()
+	{
+		for(int i = 0; i < size; i ++)
+		{
+			for(int j = 0; j < size; j ++)
+			{
+				if(i == j)
+				{
+					System.out.print(0 + " ");
+				}else{
+					System.out.print(pathmatrix[i][j].size() + " ");
+				}
+			}
+			System.out.println();
+		}
+	}
+
+	public static void main(String[] args)
+	{
+		ReachGraph rg = new ReachGraph("purdue.ser", "purdue-BDDAP.ser");
+		ReachMatrixComputation rmc = new ReachMatrixComputation(rg, 8, 2, testmode.random);
+
+		rmc.oneround();
+
+	}
+}
