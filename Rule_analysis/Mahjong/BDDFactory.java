@@ -1809,8 +1809,8 @@ public abstract class BDDFactory {
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 } catch (InvocationTargetException e) {
-                    if (e.getTargetException() instanceof RuntimeException)
-                        throw (RuntimeException) e.getTargetException();
+                    if (e.getTargetException() instanceof RuntimeException
+                        throw (RuntimeException e.getTargetException();
                     if (e.getTargetException() instanceof Error)
                         throw (Error) e.getTargetException();
                     e.printStackTrace();

@@ -15,7 +15,8 @@ public class driver{
 	
 	public static void main(String args[]) {
 		Network network = new Network();
-		network.importFromFile("examples\\2_4_4.network");
+		network.importFromFile("examples/2_4_4.network");
+		// network.importFromFile("examples\\2_4_4.network");
 		//network.importFromFile("examples\\4_8_16.network");
 		//network.importFromFile("examples\\simple_stanford.network");
 		utils.Gephi.network2gml(network);
