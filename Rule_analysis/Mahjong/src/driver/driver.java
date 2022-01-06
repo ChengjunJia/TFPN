@@ -11,8 +11,8 @@ import factory.TransferFuncFactory;
 import apverifier.bean.APVTransFunc;
 
 public class driver{
-	Network network = new Network();	
-	
+	Network network = new Network();
+
 	public static void main(String args[]) {
 		Network network = new Network();
 		network.importFromFile("examples/2_4_4.network");
@@ -24,7 +24,7 @@ public class driver{
 		//32 bit for StanfordSimple, 34 bit for fattree
 		Pkt.setHdr(HeaderFactory.generateInputHeader(34,'x'));
 		//Pkt.setHdr(HeaderFactory.generateHeader(APVTransFunc.predicates.size()));
-		
+
 		Pkt.setPort(100);//244
 		//Pkt.setPort(10101);//4816
 		//Pkt.setPort(300001);//stanford simple

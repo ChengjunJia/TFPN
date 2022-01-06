@@ -1,0 +1,12 @@
+<pinglist>
+pinger='10.1.0.2'
+version='8313'
+validFrom='2021-11-15 22:24:04'
+interval='0.1'
+tos='ALL'
+paths='4'
+path_49: dest_ip='10.2.0.2' coreswitch_id='1'
+path_51: dest_ip='10.2.0.2' coreswitch_id='3'
+path_57: dest_ip='10.3.0.2' coreswitch_id='1'
+path_59: dest_ip='10.3.0.2' coreswitch_id='3'
+</pinglist>

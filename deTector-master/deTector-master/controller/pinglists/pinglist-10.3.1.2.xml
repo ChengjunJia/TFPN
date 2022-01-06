@@ -1,0 +1,8 @@
+<pinglist>
+pinger='10.3.1.2'
+version='8313'
+validFrom='2021-11-15 22:24:04'
+interval='0.1'
+tos='ALL'
+paths='0'
+</pinglist>
