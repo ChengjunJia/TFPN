@@ -10,126 +10,148 @@ import interfaces.AbstractIP;
 import interfaces.Header;
 import interfaces.TransferFunc;
 
-public class HSATransFunc implements TransferFunc{
+public class HSATransFunc implements TransferFunc {
 	BasicTF TF;
-	
+
 	public HSATransFunc(BasicTF TF) {
 		this.TF = TF;
 	}
-	
-	public ArrayList<Node> applyRewriteRule(Rule rule, Node input, ArrayList<String> appliedRules){
+
+	public ArrayList<Node> applyRewriteRule(Rule rule, Node input, ArrayList<String> appliedRules) {
 		ArrayList<Node> result = new ArrayList<Node>();
 		ArrayList<Integer> modOutPorts = new ArrayList<Integer>();
 		modOutPorts.addAll(rule.getOutPorts());
-		//If not sedning on receiving port, remove it from outports.
-		if(!TF.sendOnReceivingPort&&modOutPorts.contains(input.getPort())) {
+		// If not sedning on receiving port, remove it from outports.
+		if (!TF.sendOnReceivingPort && modOutPorts.contains(input.getPort())) {
 			modOutPorts.remove(modOutPorts.indexOf(input.getPort()));
 		}
-		//If no outport, don't do anything.
-		if(modOutPorts.size() == 0) {
+		// If no outport, don't do anything.
+		if (modOutPorts.size() == 0) {
 			appliedRules.add(rule.getId());
 			return result;
 		}
-		//check if match pattern matches and port is in in_ports.
+		// check if match pattern matches and port is in in_ports.
 		Header newHS = input.getHdr().copyAnd(rule.getMatch());
-		if((!newHS.isEmpty())&&rule.getInPorts().contains(input.getPort())) {
-			for(Influence inf:TF.idToAffectedBy.get(rule.getId())) {
-				if(inf.getPorts().contains(input.getPort())) {//&&(appliedRules==null||appliedRules.contains(inf.getInfluencedBy().getId()))) {
+		if ((!newHS.isEmpty()) && rule.getInPorts().contains(input.getPort())) {
+			for (Influence inf : TF.idToAffectedBy.get(rule.getId())) {
+				if (inf.getPorts().contains(input.getPort())) {// &&(appliedRules==null||appliedRules.contains(inf.getInfluencedBy().getId())))
+																// {
 					newHS.minus(inf.getIntersect());
 				}
 			}
-			//apply mask,rewrite to all elements in hs_list and hs_diff, 
-            //considering the cardinality.
+			// apply mask,rewrite to all elements in hs_list and hs_diff,
+			// considering the cardinality.
 			newHS.rewrite(rule.getMask(), rule.getRewrite());
-			if(newHS.isEmpty()) {
+			if (newHS.isEmpty()) {
 				appliedRules.add(rule.getId());
 				return result;
 			}
 			newHS.pushAppliedTfRule(rule.getId(), input.getPort());
 			appliedRules.add(rule.getId());
-			for(int outPort: modOutPorts) {
-				result.add(new Node(newHS,outPort));
+			for (int outPort : modOutPorts) {
+				result.add(new Node(newHS, outPort));
 			}
 		}
 		return result;
 	}
-	
-	public ArrayList<Node> applyFwdRule(Rule rule, Node input, ArrayList<String> appliedRules){
+
+	public ArrayList<Node> applyFwdRule(Rule rule, Node input, ArrayList<String> appliedRules) {
 		ArrayList<Node> result = new ArrayList<Node>();
 		ArrayList<Integer> modOutPorts = new ArrayList<Integer>();
 		modOutPorts.addAll(rule.getOutPorts());
-		//If not sending on receiving port, remove it from outports.
-		if(!TF.sendOnReceivingPort&&modOutPorts.contains(input.getPort())) {
+		// If not sending on receiving port, remove it from outports.
+		if (!TF.sendOnReceivingPort && modOutPorts.contains(input.getPort())) {
 			modOutPorts.remove(modOutPorts.indexOf(input.getPort()));
 		}
-		//If no outport, don't do anything.
-		if(modOutPorts.size() == 0) {
+		// If no outport, don't do anything.
+		if (modOutPorts.size() == 0) {
 			appliedRules.add(rule.getId());
 			return result;
 		}
-		//check if match pattern matches and port is in in_ports.
+		// check if match pattern matches and port is in in_ports.
 		Header newHS = input.getHdr().copyAnd(rule.getMatch());
-		if((!newHS.isEmpty())&&rule.getInPorts().contains(input.getPort())) {
-			if(!TF.isUncovered) {
-				for(Influence inf:TF.idToAffectedBy.get(rule.getId())) {
-					if(inf.getPorts().contains(input.getPort())) {//&&(appliedRules==null||appliedRules.contains(inf.getInfluencedBy().getId()))) {
+		if ((!newHS.isEmpty()) && rule.getInPorts().contains(input.getPort())) {
+			if (!TF.isUncovered) {
+				for (Influence inf : TF.idToAffectedBy.get(rule.getId())) {
+					if (inf.getPorts().contains(input.getPort())) {// &&(appliedRules==null||appliedRules.contains(inf.getInfluencedBy().getId())))
+																	// {
 						newHS.minus(inf.getIntersect());
 					}
 				}
 			}
 			newHS.cleanUp();
-			if(newHS.isEmpty()) {
+			if (newHS.isEmpty()) {
 				appliedRules.add(rule.getId());
 				return result;
 			}
 			newHS.pushAppliedTfRule(rule.getId(), input.getPort());
 			appliedRules.add(rule.getId());
-			for(int outPort:modOutPorts) {
-				result.add(new Node(newHS,outPort));
+			for (int outPort : modOutPorts) {
+				Node newNode = new Node(newHS, outPort);
+				newNode.addRuleHistory(input);
+				result.add(newNode);
 			}
 		}
 		return result;
 	}
-	
-	public ArrayList<Node> applyLinkRule(Rule rule, Node input){
+
+	public ArrayList<Node> applyLinkRule(Rule rule, Node input) {
 		ArrayList<Node> result = new ArrayList<Node>();
-		if(rule.getInPorts().contains(input.getPort())) {
+		if (rule.getInPorts().contains(input.getPort())) {
 			Header ohs = input.getHdr().copy();
 			ohs.pushAppliedTfRule(rule.getId(), input.getPort());
-			for(int outPort: rule.getOutPorts()) {
-				result.add(new Node(ohs,outPort));
+			for (int outPort : rule.getOutPorts()) {
+				Node newNode = new Node(ohs, outPort);
+				newNode.addRuleHistory(input);
+				result.add(newNode);
 			}
 		}
 		return result;
 	}
-	
-	public ArrayList<Node> T(Node node){
+
+	public ArrayList<Node> T(Node node) {
 		ArrayList<Node> result = new ArrayList<Node>();
 		ArrayList<String> appliedRules = new ArrayList<String>();
 		ArrayList<Rule> ruleSet = new ArrayList<Rule>();
-		
-		if(TF.hashTableActive) {
-			//for(Wildcard w: node.getHdr().getHsList()) {
-				//TODO implement hash table
-			//}
-		}else {
+
+		if (TF.hashTableActive) {
+			// for(Wildcard w: node.getHdr().getHsList()) {
+			// TODO implement hash table
+			// }
+		} else {
 			ruleSet = TF.getRulesForInport(node.getPort());
 		}
-		
-		//lazyTfRuleIDs
-		for(Rule rule: ruleSet) {
-			//TODO check if this rule qualifies for lazy evaluation
-			if(rule.getAction()=="link") {
-				result.addAll(this.applyLinkRule(rule, node));
-			}else if(rule.getAction()=="rw") {
-				result.addAll(this.applyRewriteRule(rule, node, appliedRules));
-			}else if(rule.getAction()=="fwd") {
-				result.addAll(this.applyFwdRule(rule, node, appliedRules));
+
+		// lazyTfRuleIDs
+		for (Rule rule : ruleSet) {
+			// TODO check if this rule qualifies for lazy evaluation
+			ArrayList<Node> nextNodeList = new ArrayList<Node>();
+			if (rule.getAction() == "link") {
+				nextNodeList = this.applyLinkRule(rule, node);
+			} else if (rule.getAction() == "rw") {
+				nextNodeList = this.applyRewriteRule(rule, node, appliedRules);
+			} else if (rule.getAction() == "fwd") {
+				nextNodeList = this.applyFwdRule(rule, node, appliedRules);
 			}
+			// Chengjun
+			if (nextNodeList.size() != 0) {
+				for (Node n : nextNodeList) {
+					n.addRuleHistory(rule);
+					// n.getRuleHistory().add(rule); // Add rule record
+					// System.out.println("Get a rule here");
+					// if (n.getRuleHistory().size() > 1) {
+					// System.out.println("We get a node with #rule " + n.getRuleHistory().size() +
+					// " in history");
+					// }
+				}
+			}
+
+			result.addAll(nextNodeList);
 		}
-		//TODO lazy tf rules
-		//TODO custom rules
-		
+
+		// TODO lazy tf rules
+		// TODO custom rules
+
 		return result;
 	}
 }

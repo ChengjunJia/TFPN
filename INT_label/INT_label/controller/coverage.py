@@ -37,9 +37,6 @@ if __name__=='__main__':
             message=pubsub.get_message() 
             
             if(message!=None):
-                # if i==0:
-                #     i+=1
-                # continu
                 data=message['data']
                 r_s.add(data) 
             t=datetime.utcnow()-s       

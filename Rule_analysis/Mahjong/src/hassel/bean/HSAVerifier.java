@@ -26,6 +26,10 @@ public class HSAVerifier {
 			ArrayList<Node> tmpPropagate = new ArrayList<Node>();
 			// System.out.println("loops: " + loopCount);
 			for (Node tmpNode : propagation) {
+				// if (tmpNode.getRuleHistory().size() != 0) {
+				// System.out.println("The node has #rule " + tmpNode.getRuleHistory().size());
+				// }
+
 				ArrayList<Node> nextHPs = NTF.T(tmpNode);
 				for (Node nextHP : nextHPs) {
 					if (outPorts.contains(nextHP.getPort())) {
@@ -58,6 +62,7 @@ public class HSAVerifier {
 								tmpPropagate.add(newPNode);
 							}
 						}
+						// System.out.println("TTF transfer!");
 					}
 				}
 			}

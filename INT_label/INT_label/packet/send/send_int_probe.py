@@ -38,67 +38,67 @@ def main():
 
         while True:
             
-	    # dst1
+        # dst1
             r4.incr('send')
             pkt =  Ether(src=source, dst='00:00:00:01:01:02', type=1792)
             pkt = pkt / '\x00\x00' / '\x80\x04' / '\x07\x01' / '\x00\x00'
             pkt = pkt / data
             # r4.set('send',int(r4.get('send'))+1)
-	    sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, iface=iface, verbose=False)
             # time.sleep(sleep_time)
-	    
-	    # dst2
+        
+        # dst2
             r4.incr('send')
             pkt =  Ether(src=source, dst='00:00:00:01:02:01', type=1792)
             pkt = pkt / '\x00\x00' / '\x00\x01' / '\x00\x04' / '\x80\x03' / '\x07\x01' / '\x00\x00'
             pkt = pkt / data
             # r4.set('send',int(r4.get('send'))+1)
-	    sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, iface=iface, verbose=False)
             # time.sleep(sleep_time)
 
-	    # dst3
+        # dst3
             r4.incr('send')
             pkt =  Ether(src=source, dst='00:00:00:01:02:02', type=1792)
             pkt = pkt / '\x00\x00' / '\x00\x02' / '\x00\x04' / '\x80\x04' / '\x07\x01' / '\x00\x00'
             pkt = pkt / data
             # r4.set('send',int(r4.get('send'))+1)
-	    sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, iface=iface, verbose=False)
             # time.sleep(sleep_time)
 
-	    # dst4
+        # dst4
             r4.incr('send')
             pkt =  Ether(src=source, dst='00:00:00:02:01:01', type=1792)
             pkt = pkt / '\x00\x00' / '\x00\x01' / '\x00\x01' / '\x00\x02' / '\x00\x03' / '\x80\x03' / '\x07\x01' / '\x00\x00'
             pkt = pkt / data
             # r4.set('send',int(r4.get('send'))+1)
-	    sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, iface=iface, verbose=False)
             # time.sleep(sleep_time)
 
-	    # dst5
+        # dst5
             r4.incr('send')
             pkt =  Ether(src=source, dst='00:00:00:02:01:02', type=1792)
             pkt = pkt / '\x00\x00' / '\x00\x01' / '\x00\x01' / '\x00\x02' / '\x00\x03' / '\x80\x04' / '\x07\x01' / '\x00\x00'
             pkt = pkt / data
             # r4.set('send',int(r4.get('send'))+1)
-	    sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, iface=iface, verbose=False)
             # time.sleep(sleep_time)
 
-	    # dst6
+        # dst6
             r4.incr('send')
             pkt =  Ether(src=source, dst='00:00:00:02:02:01', type=1792)
             pkt = pkt / '\x00\x00' / '\x00\x02' / '\x00\x01' / '\x00\x02' / '\x00\x04' / '\x80\x03' / '\x07\x01' / '\x00\x00'
             pkt = pkt / data
             # r4.set('send',int(r4.get('send'))+1)
-	    sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, iface=iface, verbose=False)
             # time.sleep(sleep_time)
-	    
-	    # dst7
+        
+        # dst7
             r4.incr('send')
             pkt =  Ether(src=source, dst='00:00:00:02:02:02', type=1792)
             pkt = pkt / '\x00\x00' / '\x00\x02' / '\x00\x02' / '\x00\x02' / '\x00\x04' / '\x80\x04' / '\x07\x01' / '\x00\x00'
             pkt = pkt / data
             # r4.set('send',int(r4.get('send'))+1)
-	    sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, iface=iface, verbose=False)
             # time.sleep(sleep_time)
             
             
@@ -109,82 +109,82 @@ def main():
         while True:
             
             # r4.set('send',int(r4.get('send'))+7)
-	    # dst1
+        # dst1
             r4.incr('send')
             pkt =  Ether(src=source, dst='00:00:00:01:01:01', type=1792)
             pkt = pkt / '\x00\x00' / '\x00\x02' / '\x00\x02' / '\x00\x01' / '\x00\x03' / '\x80\x03' / '\x07\x01' / '\x00\x00'
             pkt = pkt / data
             # r4.set('send',int(r4.get('send'))+1)
-	    sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, iface=iface, verbose=False)
             # time.sleep(sleep_time)
             # s=int(r4.get('send'))+1
             # r4.set('send',s)
 
-	    # dst2
+        # dst2
             r4.incr('send')
             pkt =  Ether(src=source, dst='00:00:00:01:01:02', type=1792)
             pkt = pkt / '\x00\x00' / '\x00\x02' / '\x00\x02' / '\x00\x01' / '\x00\x03' / '\x80\x04' / '\x07\x01' / '\x00\x00'
             pkt = pkt / data
             # r4.set('send',int(r4.get('send'))+1)
-	    sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, iface=iface, verbose=False)
             # time.sleep(sleep_time)
             # s=int(r4.get('send'))+1
             # r4.set('send',s)
-	    
-	    # dst3
+        
+        # dst3
             r4.incr('send')
             pkt =  Ether(src=source, dst='00:00:00:01:02:01', type=1792)
             pkt = pkt / '\x00\x00' / '\x00\x02' / '\x00\x02' / '\x00\x01' / '\x00\x04' / '\x80\x03' / '\x07\x01' / '\x00\x00'
             pkt = pkt / data
             # r4.set('send',int(r4.get('send'))+1)
-	    sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, iface=iface, verbose=False)
             # time.sleep(sleep_time)
             # s=int(r4.get('send'))+1
             # r4.set('send',s)
 
-	    # dst4
+        # dst4
             r4.incr('send')
             pkt =  Ether(src=source, dst='00:00:00:01:02:02', type=1792)
             pkt = pkt / '\x00\x00' / '\x00\x02' / '\x00\x02' / '\x00\x01' / '\x00\x04' / '\x80\x04' / '\x07\x01' / '\x00\x00'
             pkt = pkt / data
             # r4.set('send',int(r4.get('send'))+1)
-	    sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, iface=iface, verbose=False)
             # time.sleep(sleep_time)
             # s=int(r4.get('send'))+1
             # r4.set('send',s)
 
-	    # dst5
+        # dst5
             r4.incr('send')
             pkt =  Ether(src=source, dst='00:00:00:02:01:01', type=1792)
             pkt = pkt / '\x00\x00' / '\x00\x01' / '\x00\x03' / '\x80\x03' / '\x07\x01' / '\x00\x00'
             pkt = pkt / data
             # r4.set('send',int(r4.get('send'))+1)
-	    sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, iface=iface, verbose=False)
             # time.sleep(sleep_time)
             # s=int(r4.get('send'))+1
             # r4.set('send',s)
 
-	    # dst6
+        # dst6
             r4.incr('send')
             pkt =  Ether(src=source, dst='00:00:00:02:01:02', type=1792)
             pkt = pkt / '\x00\x00' / '\x00\x01' / '\x00\x03' / '\x80\x04' / '\x07\x01' / '\x00\x00'
             pkt = pkt / data
             # r4.set('send',int(r4.get('send'))+1)
-	    sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, iface=iface, verbose=False)
             # time.sleep(sleep_time)
             # s=int(r4.get('send'))+1
             # r4.set('send',s)
 
-	    # dst7
+        # dst7
             r4.incr('send')
             pkt =  Ether(src=source, dst='00:00:00:02:02:01', type=1792)
             pkt = pkt / '\x00\x00' / '\x80\x03' / '\x07\x01' / '\x00\x00'
             pkt = pkt / data
             # r4.set('send',int(r4.get('send'))+1)
-	    sendp(pkt, iface=iface, verbose=False)
+            sendp(pkt, iface=iface, verbose=False)
             # time.sleep(sleep_time)
             
-	    
+        
 
         
 
@@ -192,9 +192,9 @@ def main():
     #pkt = pkt / '\x00\x00' / '\x00\x01' / '\x00\x01' / '\x00\x02' / '\x00\x04' / '\x80\x04' / '\x07\x01' / '\x80\x00'
     
     #for i in xrange(20):
-     #   sendp(pkt, iface=iface, verbose=False)
-      #  pkt.show2()
-       # time.sleep(1)
+    #   sendp(pkt, iface=iface, verbose=False)
+    #  pkt.show2()
+    # time.sleep(1)
         
 
 

@@ -12,7 +12,7 @@ Test For Future Programmable Network, based on the [INT_LABEL](https://github.co
 
 进入docker的shell后，运行以下命令分别运行redis数据库、检测redis数据库和运行mininet测试(clos.py里面是详细的mininet网络配置)。
 
-```
+```sh
 redis-server /etc/redis.conf
 redis-cli config set notify-keyspace-events KEA
 cd controller/
@@ -24,10 +24,13 @@ python clos.py
 ```
 
 **特别需要注意的是，运行容器的时候使用 `--privileged=true`配置，否则mininet会无法运行，卡死在Adding Host过程**
+启动容器
+` sudo docker container run --privileged=true -it jake/intlabel:v1 /bin/bash
 
-### 源码分析
+- [] 这里可以加上文件夹映射, 以方便程序进行调试
 
-
+打开多个shell运行相关命令
+` sudo docker exec -it ID /bin/bash
 
 ## 网络测试路径生成
 
@@ -38,5 +41,3 @@ TODO: 所有程序需要统一输入输出和存储方式。
 ## 其他相关论文
 
 使用Tofino当做测试仪, HyperTester: High-performance Network Testing Driven by Programmable Switches.
-
-

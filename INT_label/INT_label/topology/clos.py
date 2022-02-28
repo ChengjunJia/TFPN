@@ -209,8 +209,8 @@ def main():
                 for ii in xrange(20):
                     h.cmd("python ../packet/send/send_int_probe.py >/dev/null &")
     
-
-
+    os.sleep(1)
+    print("Start the CLI of mininet")
     CLI(net)
     net.stop()
 
