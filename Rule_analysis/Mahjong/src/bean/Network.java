@@ -87,7 +87,7 @@ public class Network implements Serializable {
 		try {
 			fr = new FileReader(FileName);
 			BufferedReader br = new BufferedReader(fr);
-			String line = br.readLine();
+			String line; // = br.readLine(); // FIXME: Here it is a bug, we skip one line of rule!
 			String[] arrs = null;
 			while ((line = br.readLine()) != null) {
 				if (line.startsWith("fwd")) {

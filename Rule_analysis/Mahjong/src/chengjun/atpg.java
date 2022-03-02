@@ -21,7 +21,7 @@ import java.nio.file.Paths;
 public class atpg {
 	public static void main(String args[]) throws SecurityException, IOException {
 		LogManager.getLogManager().reset(); // Close the logging
-		Logger logger = Logger.getLogger("Chengjun");
+		Logger logger = Logger.getLogger("ATPG");
 		logger.setLevel(Level.INFO);
 
 		int inputID = Integer.parseInt(args[0]);
@@ -127,52 +127,59 @@ public class atpg {
 				+ ruleNum + "; path# is " + allPath.size());
 		logger.info("We run the ATPG program with " + (end - start) / 1000 + " us");
 
-		ArrayList<Node> lastResult = allPath;
-		ArrayList<Node> reducedResult = new ArrayList<Node>();
+		for (int mode = 0; mode < 2; mode++) {
+			ArrayList<Node> lastResult = allPath;
+			ArrayList<Node> reducedResult = new ArrayList<Node>();
 
-		// Reduce all paths in the last result
-		LinkedHashSet<Rule> visitedRules = new LinkedHashSet<Rule>();
-		LinkedHashSet<Integer> visitedPorts = new LinkedHashSet<Integer>();
+			// Reduce all paths in the last result
+			LinkedHashSet<Rule> visitedRules = new LinkedHashSet<Rule>();
+			LinkedHashSet<Integer> visitedPorts = new LinkedHashSet<Integer>();
 
-		Collections.shuffle(lastResult);
-		start = System.nanoTime();
-		int reduce_time = 0;
-		for (int i = 0; i < 1000; i++) {
-			reduce_time++;
-			for (Node n : lastResult) {
-				ArrayList<Rule> appliedRules = n.getRuleHistory();
-				ArrayList<Integer> appliedPort = n.getVisits();
-				// for (Rule r : appliedRules) { // Cover all rules
-				// if (!visitedRules.contains(r)) {
-				// visitedRules.add(r);
-				// reducedResult.add(n);
-				// break;
-				// }
-				// }
-				for (Integer portID : appliedPort) { // Cover all ports
-					if (!visitedPorts.contains(portID)) {
-						visitedPorts.add(portID);
-						reducedResult.add(n);
-						break;
+			Collections.shuffle(lastResult);
+			start = System.nanoTime();
+			int reduce_time = 0;
+			for (int i = 0; i < 1000; i++) {
+				reduce_time++;
+				for (Node n : lastResult) {
+					ArrayList<Rule> appliedRules = n.getRuleHistory();
+					ArrayList<Integer> appliedPort = n.getVisits();
+					if (mode == 0) {
+						for (Rule r : appliedRules) { // Cover all rules
+							if (!visitedRules.contains(r)) {
+								visitedRules.addAll(appliedRules);
+								reducedResult.add(n);
+								break;
+							}
+						}
+
+					} else if (mode == 1) {
+						for (Integer portID : appliedPort) { // Cover all ports
+							if (!visitedPorts.contains(portID)) {
+								visitedPorts.addAll(appliedPort);
+								reducedResult.add(n);
+								break;
+							}
+						}
 					}
 				}
+				logger.info("Reduce the path number from " + lastResult.size() + " to " + reducedResult.size());
+				if (lastResult.size() == reducedResult.size()) {
+					break; // We can not further reduce the size, break!
+				}
+				// Next iteration
+				lastResult = reducedResult;
+				Collections.shuffle(lastResult);
+				reducedResult = new ArrayList<Node>();
+				visitedRules.clear();
+				visitedPorts.clear();
 			}
-			logger.info("Reduce the path number from " + lastResult.size() + " to " + reducedResult.size());
-			if (lastResult.size() == reducedResult.size()) {
-				break; // We can not further reduce the size, break!
-			}
-			// Next iteration
-			lastResult = reducedResult;
-			Collections.shuffle(lastResult);
-			reducedResult = new ArrayList<Node>();
-			visitedRules.clear();
-			visitedPorts.clear();
-		}
-		ArrayList<Node> finalPaths = reducedResult;
-		end = System.nanoTime();
+			end = System.nanoTime();
 
-		logger.info("We run " + reduce_time + " times to reduce to " + finalPaths.size() + " with time "
-				+ (end - start) / 1000 + " us");
+			ArrayList<Node> finalPaths = reducedResult;
+			logger.info("We run " + reduce_time + " times to reduce to " + finalPaths.size() + " with time "
+					+ (end - start) / 1000 + " us" + " with #ports: " + visitedPorts.size() + ", #rules: "
+					+ visitedRules.size());
+		}
 		// Get the rule id list
 		// for (Rule r : topoRules) {
 		// String rule_id = r.getId();

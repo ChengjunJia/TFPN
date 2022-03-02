@@ -29,13 +29,17 @@ public class HSAVerifier {
 				// if (tmpNode.getRuleHistory().size() != 0) {
 				// System.out.println("The node has #rule " + tmpNode.getRuleHistory().size());
 				// }
-
+				// System.out.println("===== start next round ====");
 				ArrayList<Node> nextHPs = NTF.T(tmpNode);
 				for (Node nextHP : nextHPs) {
+					// System.out.println("We have arrive at the node " + nextHP.toString());
 					if (outPorts.contains(nextHP.getPort())) {
 						Node reached = new Node(nextHP);
 						reached.getVisits().addAll(tmpNode.getVisits());
 						reached.getVisits().add(tmpNode.getPort());
+						// CRITICAL: modify by Chengjun, the path includes the final port too!
+						reached.getVisits().add(nextHP.getPort());
+
 						for (Header n : tmpNode.getHsHistory()) {
 							reached.getHsHistory().add(n.copy());
 						}
