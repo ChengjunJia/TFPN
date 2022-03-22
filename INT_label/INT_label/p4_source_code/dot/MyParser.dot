@@ -1,0 +1,18 @@
+digraph MyParser{
+start [shape=rectangle,label="start"]
+parse_sr [shape=rectangle,label="parse_sr
+(hdr.sr.last.type)"]
+parse_type_2 [shape=rectangle,label="parse_type_2
+(hdr.type_2.type)"]
+parse_int_option [shape=rectangle,label="parse_int_option"]
+accept [shape=rectangle,label="accept"]
+reject [shape=rectangle,label="reject"]
+start -> parse_sr [label="always"]
+parse_sr -> parse_sr [label="1w0"]
+parse_sr -> parse_type_2 [label="1w1"]
+parse_sr -> reject [label="fallthrough"]
+parse_type_2 -> parse_int_option [label="16w0x701"]
+parse_type_2 -> accept [label="16w0x800"]
+parse_type_2 -> reject [label="fallthrough"]
+parse_int_option -> accept [label="always"]
+}

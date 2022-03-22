@@ -15,7 +15,7 @@ def system_run_cmd(cmd):
 
 p = Pool(processes = 4)
 
-for i in [1, 2, 0]:
+for i in [1, 2, 0]: #
    # run_cmd = 'java -Xmx5g -cp "bin:lib/*" chengjun.atpg {testcase} > run_atpg.log  2>&1'.format(testcase = i)
    # p.apply_async(system_run_cmd, (run_cmd,))
 
@@ -25,8 +25,8 @@ for i in [1, 2, 0]:
    run_cmd = 'java -Xmx5g -cp "bin:lib/*" chengjun.increment {testcase} > run_atpg_increment.log  2>&1'.format(testcase = i)
    p.apply_async(system_run_cmd, (run_cmd,))
    
-   run_cmd = 'java -Xmx5g -cp "bin:lib/*" chengjun.atpgOnlyEndhostCombineDst {testcase} > run_atpgOnlyEndhostCombine.log  2>&1'.format(testcase = i)
-   p.apply_async(system_run_cmd, (run_cmd,))
+   # run_cmd = 'java -Xmx5g -cp "bin:lib/*" chengjun.atpgOnlyEndhostCombineDst {testcase} > run_atpgOnlyEndhostCombine.log  2>&1'.format(testcase = i)
+   # p.apply_async(system_run_cmd, (run_cmd,))
 
 p.close()
 p.join()

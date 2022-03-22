@@ -1,0 +1,53 @@
+digraph MyEgress {
+subgraph cluster {
+graph [
+label="", labeljust=r, style=bold];
+0[label=__START__, margin="", shape=rectangle, style=solid];
+1[label=__EXIT__, margin="", shape=rectangle, style=solid];
+2[label="hdr.int_option.isValid();", margin="", shape=rectangle, style=solid];
+3[label="MyEgress.set_flag_table", margin="", shape=ellipse, style=solid];
+4[label="meta.int_sampling_flag_md.int_sampling_flag == 1;", margin="", shape=rectangle, style=solid];
+5[label="MyEgress.int_table", margin="", shape=ellipse, style=solid];
+6[label="last_egress_global_timestamp.write((bit<32>)standard_metadata.egress_port, standard_metadata.egress_global_timestamp);", margin="", shape=rectangle, style=solid];
+7[label="T_0/T = 50000;
+...
+last_egress_global_timestamp.read(meta.last_egress_global_timestamp_md.last_egress_global_timestamp, (bit<32>)standard_metadata.egress_port);", margin="", shape=rectangle, style=solid];
+8[label="standard_metadata.egress_global_timestamp - meta.last_egress_global_timestamp_md.last_egress_global_timestamp > T_0/T;", margin="", shape=rectangle, style=solid];
+9[label="MyEgress.int_table_sampling", margin="", shape=ellipse, style=solid];
+10[label="last_egress_global_timestamp.write((bit<32>)standard_metadata.egress_port, standard_metadata.egress_global_timestamp);", margin="", shape=rectangle, style=solid];
+11[label="standard_metadata.egress_global_timestamp - meta.last_egress_global_timestamp_md.last_egress_global_timestamp > T1_0/T1;", margin="", shape=rectangle, style=solid];
+12[label="int_num_val_0/int_num_val = meta.int_num_md.int_num;", margin="", shape=rectangle, style=solid];
+13[label="int_num_val_0/int_num_val > 3;", margin="", shape=rectangle, style=solid];
+14[label="int_num_val_0/int_num_val = (bit<8>)MAX_hop_0/MAX_hop;", margin="", shape=rectangle, style=solid];
+15[label="random<bit<48>>(rand_val_0/rand_val, 0, a_0/a * (T_0/T - T1_0/T1) + b_0/b * (T_0/T - T1_0/T1));", margin="", shape=rectangle, style=solid];
+16[label="rand_val_0/rand_val < a_0/a * (bit<48>)int_num_val_0/int_num_val * ((T_0/T - T1_0/T1) / MAX_hop_0/MAX_hop) + b_0/b * (standard_metadata.egress_global_timestamp - meta.last_egress_global_timestamp_md.last_egress_global_timestamp - T1_0/T1);", margin="", shape=rectangle, style=solid];
+17[label="MyEgress.int_table_sampling2", margin="", shape=ellipse, style=solid];
+18[label="last_egress_global_timestamp.write((bit<32>)standard_metadata.egress_port, standard_metadata.egress_global_timestamp);", margin="", shape=rectangle, style=solid];
+19[label="NoAction_9/NoAction();", margin="", shape=rectangle, style=solid];
+0 -> 2[label=""];
+2 -> 3[label=TRUE];
+2 -> 19[label=FALSE];
+3 -> 4[label=""];
+4 -> 5[label=TRUE];
+4 -> 7[label=FALSE];
+5 -> 6[label=""];
+6 -> 1[label=""];
+7 -> 8[label=""];
+8 -> 9[label=TRUE];
+8 -> 11[label=FALSE];
+9 -> 10[label=""];
+10 -> 1[label=""];
+11 -> 12[label=TRUE];
+11 -> 1[label=FALSE];
+12 -> 13[label=""];
+13 -> 14[label=TRUE];
+13 -> 15[label=FALSE];
+14 -> 15[label=""];
+15 -> 16[label=""];
+16 -> 17[label=TRUE];
+16 -> 1[label=FALSE];
+17 -> 18[label=""];
+18 -> 1[label=""];
+19 -> 1[label=""];
+}
+}

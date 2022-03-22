@@ -147,7 +147,7 @@ public class increment {
         LinkedHashSet<Rule> unvisitedRules = new LinkedHashSet<Rule>();
         LinkedHashSet<Integer> unvisitedPorts = new LinkedHashSet<Integer>();
         LinkedHashSet<Integer> unvisitedEndPorts = new LinkedHashSet<Integer>();
-        unvisitedRules.addAll(netRules);
+        unvisitedRules.addAll(allRules);
         unvisitedPorts.addAll(netPortList);
         unvisitedEndPorts.addAll(endHostSet);
 
@@ -238,15 +238,29 @@ public class increment {
             // Try to add the new rule here
             ArrayList<Integer> inPorts = aimRule.getInPorts();
             boolean match_path = false;
+            boolean is_link_rule = true;
+            if (netRules.contains(aimRule)) {
+                is_link_rule = false;
+            }
             for (Integer start_port : inPorts) {
                 // It works only for HSA!
                 Pkt = new Node();
                 Pkt.setHdr(aimRule.getMatch()); // Directly set the header as the AIM
                 Pkt.setPort(start_port);
+                if (is_link_rule) {
+                    Pkt.setHdr(HeaderFactory.generateInputHeader(bitSize, 'x'));
+                }
                 Node pNode = new Node(Pkt);
                 HSATransFunc NTF = new HSATransFunc(network.getNTF());
-                // HSATransFunc TTF = new HSATransFunc(network.getTTF());
-                ArrayList<Node> nextHPs = NTF.T(pNode); // Get the nextHPs
+                HSATransFunc TTF = new HSATransFunc(network.getTTF());
+                ArrayList<Node> nextHPs = new ArrayList<Node>();
+                if (!is_link_rule) {
+                    nextHPs = NTF.T(pNode); // Get the nextHPs
+                } else {
+                    logger.info("The port is " + start_port);
+                    nextHPs = TTF.T(pNode);
+                }
+                // ArrayList<Node>
                 for (Node nxt_node : nextHPs) {
                     if (nxt_node.getRuleHistory().contains(aimRule)) {
                         // We have the new rule successfully
@@ -265,6 +279,9 @@ public class increment {
                         match_path = true;
                         break;
                     }
+                }
+                if (match_path) {
+                    break;
                 }
             }
             if (!match_path) {

@@ -176,9 +176,15 @@ public class atpg {
 			end = System.nanoTime();
 
 			ArrayList<Node> finalPaths = reducedResult;
+
+			int total_path = 0;
+			for (Node path_tmp : finalPaths) {
+				total_path += path_tmp.getRuleHistory().size() + 1;
+			}
+
 			logger.info("We run " + reduce_time + " times to reduce to " + finalPaths.size() + " with time "
 					+ (end - start) / 1000 + " us" + " with #ports: " + visitedPorts.size() + ", #rules: "
-					+ visitedRules.size());
+					+ visitedRules.size() + ", #totalPath: " + total_path);
 		}
 		// Get the rule id list
 		// for (Rule r : topoRules) {
