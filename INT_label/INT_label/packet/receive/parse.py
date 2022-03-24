@@ -45,14 +45,6 @@ class parse():
                 #     g.renew_file()
 
         return int_list
-
-	    
-        
-        
-        
-        
-        
-
         
         # for i in range(len(pkt[:-2])):
         #     int_list.append(self.parse_int(pkt[i]))

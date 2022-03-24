@@ -15,6 +15,10 @@ docker build -f redis.dockerfile -t jake/p4redis:v1 .
 docker build -f int.dockerfile -t jake/intlabel:v1 .
 ```
 
+**特别需要注意的是，运行容器的时候使用 `--privileged=true`配置，否则mininet会无法运行，卡死在Adding Host过程**
+启动容器
+` sudo docker container run --privileged=true --name fpnt -v /home/venus/NetworkTest/TFPN/INT_label/INT_label:/INT_label  -it jake/intlabel:v1 /bin/bash
+
 进入docker的shell后，运行以下命令分别运行redis数据库、检测redis数据库和运行mininet测试(clos.py里面是详细的mininet网络配置)。
 
 ```sh
@@ -27,7 +31,3 @@ python detect2.py
 cd topology/
 python clos.py
 ```
-
-**特别需要注意的是，运行容器的时候使用 `--privileged=true`配置，否则mininet会无法运行，卡死在Adding Host过程**
-启动容器
-` sudo docker container run --privileged=true --name fpnt -v /home/venus/NetworkTest/TFPN/INT_label/INT_label:/INT_label  -it jake/intlabel:v1 /bin/bash
