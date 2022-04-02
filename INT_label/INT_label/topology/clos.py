@@ -177,43 +177,37 @@ def main():
                   controller=None,
                   link=TCLink)
     net.start()
-    h0 = net.get(topo.id2P4[0])
-    h1 = net.get(topo.id2P4[1])
-    h0.cmd('ifconfig h0-eth1 192.168.0.1 netmask 255.255.255.0')
-    h1.cmd('ifconfig h1-eth1 192.168.0.2 netmask 255.255.255.0')
+    # h0 = net.get(topo.id2P4[0])
+    # h1 = net.get(topo.id2P4[1])
+    # h0.cmd('ifconfig h0-eth1 192.168.0.1 netmask 255.255.255.0')
+    # h1.cmd('ifconfig h1-eth1 192.168.0.2 netmask 255.255.255.0')
     # h1.cmd('iperf -s > h1_iperf_s.log &')
     info("mininet starts...")
     
+    cmd_file_path = "../flow_table/topo_direct_command.sh"
+    os.system("sh "+cmd_file_path)
+
+
     # Place the cmd
     cmd_file_path = "../flow_table/flow_place_command.sh"
     table_gen = p4_table()
     table_gen.p4_table_gen(cmd_file_path, topo)
     os.system("sh "+cmd_file_path)
-
+    CLI(net)
+    net.stop()
+    return 0
+    
     # database_init(r,r2,r4)
-    # h1.cmd("python ../packet/receive/receive.py > ./rec.log &")
     for host_id in topo.hostID_list:
         h = net.get(topo.id2P4[host_id])
+        h.cmd("python ../packet/dctrace/receive.py &" )
         # h.cmd("tcpdump -i eth0 -w recv%d.pcap &" % (host_id) )
+    print("Start the listenning...")
     for src in topo.hostID_list:
-        for dst in topo.hostID_list:
-            if dst == src:
-                continue
-            h = net.get(topo.id2P4[src])
-            # h.cmd( "ping %s &" % (topo.hostID2IP[dst]) )
-    # for i in xrange(nodes_list[4]):
-    #     for j in xrange(nodes_list[2]):
-    #         for k in xrange(nodes_list[3]):
-    #             h=net.get(topo.h_list[i][j][k])
-    #             h.cmd("python ../packet/receive/receive.py >/dev/null &")
+        h = net.get(topo.id2P4[src])
+        h.cmd("python ../packet/dctrace/send.py &" )
+    print("Start the sending...")
 
-    # for i in xrange(nodes_list[4]):
-    #     for j in xrange(nodes_list[2]):
-    #         for k in xrange(nodes_list[3]):
-    #             h=net.get(topo.h_list[i][j][k])
-    #             for ii in xrange(20):
-    #                 h.cmd("python ../packet/send/send_int_probe.py >/dev/null &")
-    
     time.sleep(1)
     print("Start the CLI of mininet")
     CLI(net)
