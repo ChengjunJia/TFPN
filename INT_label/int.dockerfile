@@ -9,6 +9,7 @@ COPY ./redis.conf /etc/redis.conf
 # Install ovs
 # RUN apt-get install -y openvswitch-switch
 # RUN service openvswitch-switch start
+RUN apt-get install python3-redis
 
 # Install INT label
 # COPY INT_label /INT_label

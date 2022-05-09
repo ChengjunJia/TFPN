@@ -144,6 +144,7 @@ register<bit<32>>(960) packet_count_list;
 #define IP_PROTOCOLS_ICMP   1
 #define IP_PROTOCOLS_IGMP   2
 #define IP_PROTOCOLS_IPV4   4
+#define IP_PROTOCOLS_TRACE  5
 #define IP_PROTOCOLS_TCP    6
 #define IP_PROTOCOLS_UDP    17
 #define IP_PROTOCOLS_IPV6   41
@@ -191,6 +192,7 @@ parser MyParser(packet_in pkt,
         pkt.extract(hdr.ipv4);
         transition select(hdr.ipv4.protocol) {
             IP_PROTOCOLS_ICMP: accept;
+            IP_PROTOCOLS_TRACE: parse_trace;
             IP_PROTOCOLS_TCP: parse_tcp;
             IP_PROTOCOLS_UDP: parse_udp;
             default: accept;
@@ -199,15 +201,21 @@ parser MyParser(packet_in pkt,
 
     state parse_udp {
         pkt.extract(hdr.udp);
-        transition parse_int_option;
+        transition select(hdr.udp.dst_port) {
+            12345: parse_trace;            
+            default: accept;
+        }
     }
 
     state parse_tcp {
         pkt.extract(hdr.tcp);
-        transition parse_int_option;
+        transition select(hdr.tcp.dst_port) {
+            12345: parse_trace;
+            default: accept;
+        }
     }
 
-    state parse_int_option {
+    state parse_trace {
         pkt.extract(hdr.int_option);
         transition accept;
     }
@@ -235,6 +243,7 @@ control MyIngress(inout headers hdr,
     action update_trace_enable_flag() {
         meta.int_flag.isTraceEnable = true; // TODO: 增加其他可能性, 只拿出最后一跳的决策结果(如果table过多)
         meta.int_flag.isLastStep = (hdr.int_option.ttl == 0)? true : false; // TODO: last step, forward to other port!
+        // meta.int_flag.isLastStep = true;
         hdr.int_option.ttl = hdr.int_option.ttl - 1;
         // Add an INT header to the packet
         hdr.int_option.int_num = hdr.int_option.int_num + 1;

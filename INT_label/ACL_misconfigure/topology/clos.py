@@ -196,12 +196,15 @@ def main():
     # h1.cmd('iperf -s > h1_iperf_s.log &')
 
     h0 = net.get(topo.id2P4[0])
+    h1 = net.get(topo.id2P4[1])
     h4 = net.get(topo.id2P4[4])
     # h0.cmd('tcpdump -i eth0 -w h0_tcpdump.pcap &')
     # h4.cmd('tcpdump -i eth0 -w h4_tcpdump.pcap &')
-    net.iperf((h0, h4), seconds = 100)
-    # h4.cmd("python ../packet/dctrace/receive.py > recv.log")
-    # h0.cmd('python ../packet/dctrace/send.py > send.log')
+    # net.iperf((h0, h4), seconds = 100)
+    h0.cmd("python3 ../packet/dctrace/trace_send.py -i 0 &")
+    for i in range(1,4):
+        h = net.get(topo.id2P4[i])
+        h.cmd("python3 ../packet/dctrace/trace_receive.py -i %d &" % i)
 
     # database_init(r,r2,r4)
     # for host_id in topo.hostID_list:
