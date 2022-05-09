@@ -23,7 +23,7 @@ docker build -f int.dockerfile -t jake/intlabel:v1 .
 
 ```sh
 redis-server /etc/redis.conf
-redis-cli config set notify-keyspace-events KEA
+# redis-cli config set notify-keyspace-events KEA
 cd controller/
 python coverage.py
 python detect1.py

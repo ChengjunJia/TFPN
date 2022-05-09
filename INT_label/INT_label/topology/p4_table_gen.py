@@ -19,6 +19,9 @@ class p4_table():
         # For each switch
         for sw_id in topo.swID_list:
             with open(p4_table_dir+"/"+( "s%d.txt" % (sw_id) ), "w" ) as f:
-                f.write("table_set_default manual_modify change_nxt_dst 2\n")
+                # f.write("table_set_default manual_modify change_nxt_dst 2\n")
+                f.write("table_set_default MyIngress.trace_fwd change_nxt_dst 3\n")
+                f.write("table_add MyIngress.fwd change_nxt_dst 10.0.0.1/32 => 1\n")
+                f.write("table_add MyIngress.fwd change_nxt_dst 10.0.0.5/32 => 2\n")
                 # f.write("table_add int_table do_int => 10")
         

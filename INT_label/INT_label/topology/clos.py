@@ -28,8 +28,8 @@ args = parser.parse_args()
 
 TIME_OUT=2*10 #2*20ms
 Loss=0 # %
-BW=1000
-MAX_Q_SIZE=100
+BW=100
+MAX_Q_SIZE=10*1000
 
 class clos(Topo):
 
@@ -87,7 +87,8 @@ class clos(Topo):
                 self.hostID_list.append(host_id)
                 ip_addr=  host_id + 1 # 0 is not allowed
                 ipAddr = "10.%d.%d.%d" % ( (ip_addr>>16) & 0xFF, (ip_addr>>8) & 0xFF, ip_addr & 0xFF)
-                macAddr = "00:00:00:%s:%s:%s" % (hex(host_id)[2:4],hex(host_id)[4:6],hex(host_id)[6:8])
+                mac_id = ip_addr + 1024
+                macAddr = "00:00:00:%s:%s:%s" % (hex(mac_id)[2:4],hex(mac_id)[4:6],hex(mac_id)[6:8])
                 h = self.addHost('h%d' % (host_id), ip=ipAddr, mac=macAddr)
                 self.host_list.append(h)
                 self.hostID2P4ID[host_id] = p4host_id_no
@@ -159,6 +160,8 @@ def database_init(r,r2,r4,nodes_list=[2,2,2,2,2]):
 
 def main():
     os.system('sh ../p4_source_code/run.sh')
+    os.system("rm *.pcap")
+    os.system('rm *.log')
     
     r = redis.Redis(unix_socket_path='/var/run/redis/redis-server.sock',port=6390)       # aging database
     r2 = redis.Redis(unix_socket_path='/var/run/redis/redis-server.sock',port=6390,db=1) # persist database
@@ -177,42 +180,45 @@ def main():
                   controller=None,
                   link=TCLink)
     net.start()
-    # h0 = net.get(topo.id2P4[0])
-    # h1 = net.get(topo.id2P4[1])
-    # h0.cmd('ifconfig h0-eth1 192.168.0.1 netmask 255.255.255.0')
-    # h1.cmd('ifconfig h1-eth1 192.168.0.2 netmask 255.255.255.0')
-    # h1.cmd('iperf -s > h1_iperf_s.log &')
-    info("mininet starts...")
-    
-    cmd_file_path = "../flow_table/topo_direct_command.sh"
-    os.system("sh "+cmd_file_path)
+    info("mininet starts...\n")
 
-
-    # Place the cmd
+    # Place the switch cmd
+    # cmd_file_path = "../flow_table/topo_direct_command.sh"
+    # os.system("sh "+cmd_file_path)
     cmd_file_path = "../flow_table/flow_place_command.sh"
     table_gen = p4_table()
     table_gen.p4_table_gen(cmd_file_path, topo)
     os.system("sh "+cmd_file_path)
-    CLI(net)
-    net.stop()
-    return 0
+    info("switch commands are placed...\n")
     
-    # database_init(r,r2,r4)
-    for host_id in topo.hostID_list:
-        h = net.get(topo.id2P4[host_id])
-        h.cmd("python ../packet/dctrace/receive.py &" )
-        # h.cmd("tcpdump -i eth0 -w recv%d.pcap &" % (host_id) )
-    print("Start the listenning...")
-    for src in topo.hostID_list:
-        h = net.get(topo.id2P4[src])
-        h.cmd("python ../packet/dctrace/send.py &" )
-    print("Start the sending...")
+    net.staticArp()
+    # Place the server cmd
+    # h1.cmd('iperf -s > h1_iperf_s.log &')
 
-    time.sleep(1)
-    print("Start the CLI of mininet")
+    h0 = net.get(topo.id2P4[0])
+    h4 = net.get(topo.id2P4[4])
+    # h0.cmd('tcpdump -i eth0 -w h0_tcpdump.pcap &')
+    # h4.cmd('tcpdump -i eth0 -w h4_tcpdump.pcap &')
+    net.iperf((h0, h4), seconds = 100)
+    # h4.cmd("python ../packet/dctrace/receive.py > recv.log")
+    # h0.cmd('python ../packet/dctrace/send.py > send.log')
+
+    # database_init(r,r2,r4)
+    # for host_id in topo.hostID_list:
+    #     h = net.get(topo.id2P4[host_id])
+    #     h.cmd("python ../packet/dctrace/receive.py &" )
+    #     h.cmd("tcpdump -i eth0 -w recv%d.pcap &" % (host_id) )
+    # print("Start the listenning...")
+    # for src in topo.hostID_list:
+    #     h = net.get(topo.id2P4[src])
+    #     h.cmd("python ../packet/dctrace/send.py &" )
+    # print("Start the sending...")
+
     CLI(net)
     net.stop()
-
+    # h0_popen.terminate()
+    # h4_popen.terminate()
+    return 0
 
 if __name__ == '__main__':
     setLogLevel('info')

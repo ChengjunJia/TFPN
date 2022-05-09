@@ -1,1 +1,3 @@
-table_set_default manual_modify change_nxt_dst 2
+table_set_default MyIngress.trace_fwd change_nxt_dst 3
+table_add MyIngress.fwd change_nxt_dst 10.0.0.1/32 => 1
+table_add MyIngress.fwd change_nxt_dst 10.0.0.5/32 => 2

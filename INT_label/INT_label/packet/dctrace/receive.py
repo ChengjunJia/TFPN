@@ -25,6 +25,8 @@ class parse():
 class receive():
     def listen_speed(self):
         print("Program starts...")
+        with open("./recv.log", "a") as f:
+            f.write("Program starts at %s\n" % (datetime.datetime.now()))
         s = socket.socket(socket.PF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
         # r = redis.Redis(unix_socket_path='/var/run/redis/redis-server.sock',port=6390)       # aging database
         # r2 = redis.Redis(unix_socket_path='/var/run/redis/redis-server.sock',port=6390,db=1) # persist database

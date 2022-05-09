@@ -26,22 +26,23 @@ def get_if():
         exit(1)
     return iface
 
-def main():
+def main(src_ip, dst_ip):
 
     iface = get_if()
     source=get_if_hwaddr(iface)
     
     data= '\x77\x77'*400
     
-    r4 = redis.Redis(unix_socket_path='/var/run/redis/redis-server.sock',port=6390,db=3) # data database
-    
+    # r4 = redis.Redis(unix_socket_path='/var/run/redis/redis-server.sock',port=6390,db=3) # data database
 
-    pkt =  Ether(src=source, dst='00:00:00:01:01:02', type=1792)
-    pkt = pkt / '\x00\x00' / '\x80\x04' / '\x07\x01' / '\x00\x00'
+    pkt =  Ether(src=source, dst='00:00:00:01:01:02', type=0x0800)
+    pkt = pkt / IP(src=src_ip, dst=dst_ip) / UDP()
     pkt = pkt / data
 
     last_time = datetime.datetime.now()
     total_bytes = 0
+    with open("./send.log", "a") as f:
+        f.write("Program starts at %s\n" % (datetime.datetime.now()))
     while True:
         # r4.incr('send')
         # r4.set('send',int(r4.get('send'))+1)
@@ -55,9 +56,13 @@ def main():
             throughput_MBps = total_bytes / total_microseconds
             print("The throughput is %.2f MBps\n" % (throughput_MBps))
             with open("./send.log", "a") as f:
-                f.write("New throughput as %.2f Mbps and bytes %d/%d\n" % (throughput_MBps*8, total_bytes, total_bytes/len(pkt)))
+                f.write( datetime.datetime.now() + " New throughput as %.2f Mbps and bytes %d/%d\n" % (throughput_MBps*8, total_bytes, total_bytes/len(pkt)))
             last_time = datetime.datetime.now()
             total_bytes = 0
         
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Packet sending')
+    parser.add_argument('-s', '--src_ip', type=str, default="10.0.0.1")
+    parser.add_argument('-d', '--dst_ip', type=str, default="10.0.0.5")
+    args = parser.parse_args()
+    main(args.src_ip, args.dst_ip)
