@@ -202,16 +202,18 @@ parser MyParser(packet_in pkt,
     state parse_udp {
         pkt.extract(hdr.udp);
         transition select(hdr.udp.dst_port) {
-            12345: parse_trace;            
-            default: accept;
+            // 12345: parse_trace;            
+            // default: accept;
+            default: parse_trace;
         }
     }
 
     state parse_tcp {
         pkt.extract(hdr.tcp);
         transition select(hdr.tcp.dst_port) {
-            12345: parse_trace;
-            default: accept;
+            // 12345: parse_trace;
+            // default: accept;
+            default: parse_trace;
         }
     }
 

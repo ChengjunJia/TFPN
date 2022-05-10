@@ -175,9 +175,10 @@ def main():
         p.start()
 
     CLI(net)
-    time.sleep(10)
+    # time.sleep(10)
     net.stop()
-
+    
+    exit(0)
     for p in process_list:
         p.join()
     # h0_popen.terminate()

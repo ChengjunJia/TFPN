@@ -366,16 +366,10 @@
           ],
           "transitions" : [
             {
-              "type" : "hexstr",
-              "value" : "0x3039",
-              "mask" : null,
-              "next_state" : "parse_trace"
-            },
-            {
               "type" : "default",
               "value" : null,
               "mask" : null,
-              "next_state" : null
+              "next_state" : "parse_trace"
             }
           ],
           "transition_key" : [
@@ -401,16 +395,10 @@
           ],
           "transitions" : [
             {
-              "type" : "hexstr",
-              "value" : "0x3039",
-              "mask" : null,
-              "next_state" : "parse_trace"
-            },
-            {
               "type" : "default",
               "value" : null,
               "mask" : null,
-              "next_state" : null
+              "next_state" : "parse_trace"
             }
           ],
           "transition_key" : [
@@ -454,7 +442,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "../p4_source_code/int_test.p4",
-        "line" : 383,
+        "line" : 385,
         "column" : 8,
         "source_fragment" : "MyDeparser"
       },
@@ -514,7 +502,7 @@
           ],
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 240,
+            "line" : 242,
             "column" : 8,
             "source_fragment" : "mark_to_drop(standard_metadata)"
           }
@@ -536,7 +524,7 @@
           ],
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 240,
+            "line" : 242,
             "column" : 8,
             "source_fragment" : "mark_to_drop(standard_metadata)"
           }
@@ -558,7 +546,7 @@
           ],
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 240,
+            "line" : 242,
             "column" : 8,
             "source_fragment" : "mark_to_drop(standard_metadata)"
           }
@@ -594,7 +582,7 @@
           ],
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 244,
+            "line" : 246,
             "column" : 8,
             "source_fragment" : "meta.int_flag.isTraceEnable = true"
           }
@@ -647,7 +635,7 @@
           ],
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 245,
+            "line" : 247,
             "column" : 8,
             "source_fragment" : "meta.int_flag.isLastStep ="
           }
@@ -689,7 +677,7 @@
           ],
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 247,
+            "line" : 249,
             "column" : 8,
             "source_fragment" : "hdr.int_option.ttl = hdr.int_option.ttl - 1"
           }
@@ -731,7 +719,7 @@
           ],
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 249,
+            "line" : 251,
             "column" : 8,
             "source_fragment" : "hdr.int_option.int_num = hdr.int_option.int_num + 1"
           }
@@ -746,7 +734,7 @@
           ],
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 250,
+            "line" : 252,
             "column" : 8,
             "source_fragment" : "hdr.dcntrace.setValid()"
           }
@@ -777,7 +765,7 @@
           ],
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 254,
+            "line" : 256,
             "column" : 8,
             "source_fragment" : "standard_metadata.egress_spec = nxt_port"
           }
@@ -808,7 +796,7 @@
           ],
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 254,
+            "line" : 256,
             "column" : 8,
             "source_fragment" : "standard_metadata.egress_spec = nxt_port"
           }
@@ -816,7 +804,7 @@
       ]
     },
     {
-      "name" : "int_test292",
+      "name" : "int_test294",
       "id" : 9,
       "runtime_data" : [],
       "primitives" : [
@@ -844,7 +832,7 @@
           ],
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 292,
+            "line" : 294,
             "column" : 12,
             "source_fragment" : "meta.int_flag.isTraceEnable = false"
           }
@@ -873,7 +861,7 @@
           ],
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 293,
+            "line" : 295,
             "column" : 12,
             "source_fragment" : "meta.int_flag.isLastStep = false"
           }
@@ -887,7 +875,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "../p4_source_code/int_test.p4",
-        "line" : 236,
+        "line" : 238,
         "column" : 8,
         "source_fragment" : "MyIngress"
       },
@@ -898,7 +886,7 @@
           "id" : 0,
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 290,
+            "line" : 292,
             "column" : 12,
             "source_fragment" : "update_trace_enable_flag()"
           },
@@ -923,11 +911,11 @@
           }
         },
         {
-          "name" : "tbl_int_test292",
+          "name" : "tbl_int_test294",
           "id" : 1,
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 292,
+            "line" : 294,
             "column" : 40,
             "source_fragment" : "= false; ..."
           },
@@ -939,10 +927,10 @@
           "support_timeout" : false,
           "direct_meters" : null,
           "action_ids" : [9],
-          "actions" : ["int_test292"],
+          "actions" : ["int_test294"],
           "base_default_next" : "node_5",
           "next_tables" : {
-            "int_test292" : "node_5"
+            "int_test294" : "node_5"
           },
           "default_entry" : {
             "action_id" : 9,
@@ -956,7 +944,7 @@
           "id" : 2,
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 268,
+            "line" : 270,
             "column" : 10,
             "source_fragment" : "trace_fwd"
           },
@@ -987,7 +975,7 @@
           "id" : 3,
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 256,
+            "line" : 258,
             "column" : 10,
             "source_fragment" : "fwd"
           },
@@ -1025,7 +1013,7 @@
           "id" : 4,
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 277,
+            "line" : 279,
             "column" : 10,
             "source_fragment" : "ingress_acl"
           },
@@ -1065,7 +1053,7 @@
           "id" : 0,
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 289,
+            "line" : 291,
             "column" : 13,
             "source_fragment" : "hdr.int_option.isValid() && hdr.int_option.int_enable == 0x1234"
           },
@@ -1101,14 +1089,14 @@
             }
           },
           "true_next" : "tbl_update_trace_enable_flag",
-          "false_next" : "tbl_int_test292"
+          "false_next" : "tbl_int_test294"
         },
         {
           "name" : "node_5",
           "id" : 1,
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 297,
+            "line" : 299,
             "column" : 13,
             "source_fragment" : "meta.int_flag.isTraceEnable && meta.int_flag.isLastStep"
           },
@@ -1148,7 +1136,7 @@
           "id" : 2,
           "source_info" : {
             "filename" : "../p4_source_code/int_test.p4",
-            "line" : 303,
+            "line" : 305,
             "column" : 13,
             "source_fragment" : "hdr.udp.isValid()"
           },
@@ -1173,7 +1161,7 @@
       "id" : 1,
       "source_info" : {
         "filename" : "../p4_source_code/int_test.p4",
-        "line" : 313,
+        "line" : 315,
         "column" : 8,
         "source_fragment" : "MyEgress"
       },
