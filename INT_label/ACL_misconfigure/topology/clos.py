@@ -5,11 +5,12 @@ from mininet.cli import CLI
 from mininet.link import TCLink
 from p4_mininet import P4Switch, P4Host
 from p4_table_gen import p4_table
+from multiprocessing import Process
 
 import argparse
 import time
 import os
-import redis
+from controller import Analyzer
 
 os.system("sudo mn -c")
 
@@ -88,7 +89,8 @@ class clos(Topo):
                 ip_addr=  host_id + 1 # 0 is not allowed
                 ipAddr = "10.%d.%d.%d" % ( (ip_addr>>16) & 0xFF, (ip_addr>>8) & 0xFF, ip_addr & 0xFF)
                 mac_id = ip_addr + 1024
-                macAddr = "00:00:00:%s:%s:%s" % (hex(mac_id)[2:4],hex(mac_id)[4:6],hex(mac_id)[6:8])
+                hexValue = hex(mac_id) + "00000000000000"
+                macAddr = "00:00:00:%s:%s:%s" % (hexValue[2:4], hexValue[4:6], hexValue[6:8])
                 h = self.addHost('h%d' % (host_id), ip=ipAddr, mac=macAddr)
                 self.host_list.append(h)
                 self.hostID2P4ID[host_id] = p4host_id_no
@@ -109,66 +111,19 @@ class clos(Topo):
             #     src, dst = self.id2P4[src_id], self.id2P4[dst_id]
             #     self.addLink(src, dst, loss=Loss, bw=BW, max_queue_size=MAX_Q_SIZE)
 
-
-def database_init(r,r2,r4,nodes_list=[2,2,2,2,2]):
-    r2.flushall()
-    
-    r4.set('send',0) # num of sending (data packet)
-    r4.set('receive',0) # num of receiving (data packet)
-    r4.set('int',0) # num of packet with int info
-    r4.set('all',0) # num of int info
-    r4.set('extra',0) # num of redundancy probing
-    r4.set('0',0) # num of packets with 0 INT info 
-    r4.set('1',0) # num of packets with 1 INT info 
-    r4.set('2',0) # num of packets with INT info 
-    r4.set('3',0) # num of packets with INT info 
-    r4.set('4',0) # num of packets with INT info 
-    r4.set('5',0) # num of packets with INT info 
-    
-    spine_num = nodes_list[0]
-    set_num = nodes_list[1]
-    leaf_num = nodes_list[1]
-    tor_num = nodes_list[2]
-    h_num = nodes_list[3]
-    pod_num = nodes_list[4]
-    
-    d={}
-    t=0
-    keys=[]
-    for i in range(set_num*spine_num):
-        d[str(t)]=pod_num
-        t+=1
-    
-    for i in range(pod_num*leaf_num):
-        d[str(t)]=spine_num+tor_num
-        t+=1
-    
-    for i in range(pod_num*tor_num):
-        d[str(t)]=leaf_num+h_num
-        t+=1
-
-    for k,v in d.items():
-        for i in range(v):
-            keys.append(k+'-'+str(i+1))
-    
-    for key in keys:
-        r2.lpush(key,-1,-1)
-        r.lpush(key,-1,-1)
-        r.pexpire(key,TIME_OUT)
-
-
-
 def main():
     os.system('sh ../p4_source_code/run.sh')
-    os.system("rm *.pcap")
+    # os.system("rm *.pcap")
+    # TODO: compress the log and archive them
+    os.system('tar -zcvf ./result/arch/log-%s.tar.gz *.log' % (time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())))
     os.system('rm *.log')
     
-    r = redis.Redis(unix_socket_path='/var/run/redis/redis-server.sock',port=6390)       # aging database
-    r2 = redis.Redis(unix_socket_path='/var/run/redis/redis-server.sock',port=6390,db=1) # persist database
-    r4 = redis.Redis(unix_socket_path='/var/run/redis/redis-server.sock',port=6390,db=3) # data database
-    # database_init(r,r2,r4)
-    # os.system('python ../controller/coverage.py >/dev/null &')    #calculate the coverage
-    
+    process_list = []
+    analyzer = Analyzer([1, 2, 3])
+    analyzer.clear()
+    p1 = Process(target=analyzer.run)
+    process_list.append(p1)
+
     topo = clos(args.behavioral_exe,
                 args.thrift_port,
                 args.json,
@@ -193,32 +148,38 @@ def main():
     
     net.staticArp()
     # Place the server cmd
-    # h1.cmd('iperf -s > h1_iperf_s.log &')
-
+    
     h0 = net.get(topo.id2P4[0])
-    h1 = net.get(topo.id2P4[1])
     h4 = net.get(topo.id2P4[4])
-    # h0.cmd('tcpdump -i eth0 -w h0_tcpdump.pcap &')
-    # h4.cmd('tcpdump -i eth0 -w h4_tcpdump.pcap &')
-    # net.iperf((h0, h4), seconds = 100)
-    h0.cmd("python3 ../packet/dctrace/trace_send.py -i 0 &")
+
+    # Generate the Traffic
+    # h0 --> h4, iperf traffic running (max speed is about 100Mbps, so we limit 30M to ensure that there is no queue at the switch)
+    # PORT1 = 520
+    # PORT2 = 521 # The traffic of 521 will be dropped by misconfigured ACL
+    # h0.cmd('iperf -s -p %d &' % PORT1)
+    # h0.cmd('iperf -s -p %d &' % PORT2)
+    # h0.cmd('tcpdump -i eth0 -w h0_eth0.pcap &')
+    # h4.cmd('iperf -c 10.0.0.1 -u -b 25M -t 10 -i 0.5 -p %d > ./h4_iperf_c1.log &' % PORT1)
+    # h4.cmd('iperf -c 10.0.0.1 -u -b 15M -t 10 -i 0.5 -p %d > ./h4_iperf_c2.log &' % PORT2)
+    h4.cmd('tcpreplay -i eth0 -l 100 -M 40 ./h0_eth0.pcap &') # replay the traffic
+    h0.cmd('sar -n DEV 1 100 > ./h0_sar.log &')
+
+    h4.cmd("python3 ../packet/dctrace/trace_send.py -i 0 &")
     for i in range(1,4):
         h = net.get(topo.id2P4[i])
         h.cmd("python3 ../packet/dctrace/trace_receive.py -i %d &" % i)
 
-    # database_init(r,r2,r4)
-    # for host_id in topo.hostID_list:
-    #     h = net.get(topo.id2P4[host_id])
-    #     h.cmd("python ../packet/dctrace/receive.py &" )
-    #     h.cmd("tcpdump -i eth0 -w recv%d.pcap &" % (host_id) )
-    # print("Start the listenning...")
-    # for src in topo.hostID_list:
-    #     h = net.get(topo.id2P4[src])
-    #     h.cmd("python ../packet/dctrace/send.py &" )
-    # print("Start the sending...")
+    print("Start the Testing...")
+
+    for p in process_list:
+        p.start()
 
     CLI(net)
+    time.sleep(10)
     net.stop()
+
+    for p in process_list:
+        p.join()
     # h0_popen.terminate()
     # h4_popen.terminate()
     return 0

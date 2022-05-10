@@ -9,11 +9,18 @@ from scapy.all import get_if_addr
 from scapy.all import sniff, wrpcap
 import scapy.all as scapy
 
+db = None
+
 def get_packet(pkt):
     # Get the IP
+    global db
     logger = logging.getLogger()
     logger.info("The packet is %s" % pkt.show(dump=True))
-    wrpcap("trace_receive.pcap", pkt, append=True)
+    # wrpcap("trace_receive.pcap", pkt, append=True)
+    db.incr("recv_trace_pkt_num") # recv a trace packet
+    # Analyze the packet information: with IP, port and others as the key, and the traceID(time, trace_info) as the value
+    # TODO: add the record of file
+
 
 def trace_listen():
     # Get the IP
@@ -38,4 +45,7 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--index', type=str, default="0")
     args = parser.parse_args()
     logging.basicConfig(filename="./trace_receive_"+args.index+".log", format="%(asctime)s-%(levelname)s:%(message)s", level=logging.DEBUG, filemode="a")
+    # TODO: move the config file to a separate file
+    REDIS_PORT = 6390
+    db = redis.Redis(unix_socket_path='/var/run/redis/redis-server.sock',port=REDIS_PORT, db=args.index)
     trace_listen()

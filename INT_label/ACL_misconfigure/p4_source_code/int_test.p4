@@ -274,6 +274,17 @@ control MyIngress(inout headers hdr,
         default_action = drop();
     }
 
+    table ingress_acl {
+        key = {
+            hdr.udp.dst_port: exact;
+        }
+        actions = {
+            NoAction;
+            drop;
+        }
+        default_action = NoAction;
+    }
+
     apply {
         if ( hdr.int_option.isValid() && hdr.int_option.int_enable == 0x1234 ) {
             update_trace_enable_flag();
@@ -287,7 +298,11 @@ control MyIngress(inout headers hdr,
             trace_fwd.apply();
         } else {
             fwd.apply();
-        }            
+        }
+
+        if ( hdr.udp.isValid() ) {
+            ingress_acl.apply();
+        }
     }
 }
 
