@@ -28,13 +28,10 @@ def get_if():
         # get_if_addr(iface) # Get the IP address
     return iface
 
-def main(src_ip, dst_ip):
-    logger = logging.getLogger()
-    logger.info("Program starts")
-
-    iface = get_if()
-    # source=get_if_hwaddr(iface)
-    trace_header = '\x12\x34\x02\x00' # Trace Gap: 2
+def get_pkt(src_ip, dst_ip, trace_len=2):
+    trace_header_list = ['\x12\x34\x00\x00', '\x12\x34\x01\x00', '\x12\x34\x02\x00']
+    assert(trace_len <= 2)
+    trace_header = trace_header_list[trace_len] # '\x12\x34\x02\x00' # Trace Gap: 2
     data= '\x77\x77'*10
 
     mac_id = 5 + 1024
@@ -46,8 +43,17 @@ def main(src_ip, dst_ip):
 
     pkt = Ether(src=srcMac, dst=dstMac) / IP(src=src_ip, dst=dst_ip) / UDP(sport = 1212, dport=521) / trace_header
     pkt = pkt / data
+    return pkt
+
+
+def main(src_ip, dst_ip):
+    logger = logging.getLogger()
+    logger.info("Program starts")
+
+    iface = get_if()
+    # source=get_if_hwaddr(iface)
+    
     total_packet = 0
-    pkts = []
     s = conf.L2socket(iface=iface)
     
     logger.info("Start to send the packet")
@@ -57,14 +63,28 @@ def main(src_ip, dst_ip):
     db = redis.Redis(unix_socket_path='/var/run/redis/redis-server.sock',port=REDIS_PORT, db=TRACE_SEND_DB)
     db.set("send_trace_pkt_num", 0)
     db.set("last_send_time", time.time())
+    db.set("check_all_path", 0)
     trace_interval = 0.05
     db.set("send_interval", trace_interval)
 
+    default_pkt = get_pkt(src_ip, dst_ip)
     while True:
-        s.send(pkt)
+        s.send(default_pkt)
         db.incr("send_trace_pkt_num") # send a trace packet
         db.set("last_send_time", time.time())
-        time.sleep(trace_interval)
+        t1 = time.time()
+        while time.time() - t1 < trace_interval:
+            if int(db.get("check_all_path")) > 0:
+                logger.info("Check all path is set and we start to check all")
+                db.decr("check_all_path")
+                for i in range(0, 2):
+                    pkt = get_pkt(src_ip, dst_ip, i)
+                    s.send(pkt)
+                db.set("last_send_time", time.time())
+                break
+        now = time.time()
+        if now < t1 + trace_interval:
+            time.sleep(t1 + trace_interval - now)
         total_packet += 1
         logger.info("Send packet %d" % total_packet)
         # time.sleep(sleep_time)

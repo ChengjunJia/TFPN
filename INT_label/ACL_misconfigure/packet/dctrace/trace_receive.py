@@ -12,11 +12,13 @@ import scapy.all as scapy
 
 db = None
 trigger_event = None
-CHECK_THREAD_INTERVAL = 1
+CHECK_THREAD_INTERVAL = 0.1
 
 def trigger_check():
-    global db
+    global db, trigger_event
     db.incr("trigger_check_num")
+    if trigger_event is not None:
+        trigger_event.cancel()
     trigger_event = Timer(CHECK_THREAD_INTERVAL, trigger_check)
     trigger_event.start()
 

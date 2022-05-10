@@ -1,1 +1,1 @@
-table_add MyIngress.ingress_acl drop 521 =>
+table_clear MyIngress.ingress_acl

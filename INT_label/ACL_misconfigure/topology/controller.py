@@ -53,6 +53,8 @@ class Analyzer:
         trigger_num = r.get('trigger_check_num')
         trigger_num = int(trigger_num)
         if trigger_num > 0 and self.last_trigger_num[0] != trigger_num:
+            self.logger.info("The trigger check num is %d" % trigger_num)
+            self.last_trigger_num[0] = trigger_num
             return False
         return True
 
@@ -60,16 +62,57 @@ class Analyzer:
         # Get the information from all databases and analyze them
         ret = self.period_check()
         if not ret:
-            self.logger.info("Find error now!")
-            # remove_fault_acl_rule()
-            time.sleep(1)
-            # exit(0)
+            self.solve_bug()
+
+    def solve_bug(self):
+        self.logger.info("Find error now!")
+        REDIS_PORT = 6390
+        TRACE_SEND_DB = 15
+        sendDB = redis.Redis(unix_socket_path='/var/run/redis/redis-server.sock',port=REDIS_PORT,db=TRACE_SEND_DB)
+        sendDB.incr('check_all_path')
+        self.logger.info("Command the senders to send out packets")
+        while int(sendDB.get('check_all_path')) != 0:
+            self.logger.info("Still waiting...")
+        self.logger.info("The trace packets have been sent")
+        now = time.time()
+        trigger_send_time = float(sendDB.get('last_send_time'))
+        if now < trigger_send_time + 0.07:
+            time.sleep(trigger_send_time + 0.07 - now)
+            # wait for 50ms to ensure the trigger packets reached
+        r1 = self.redis_db_list[1]
+        r2 = self.redis_db_list[2]
+        recv1_num = int(r1.get('recv_trace_pkt_num'))
+        recv2_num = int(r2.get('recv_trace_pkt_num'))
+        if recv1_num == 0 and recv2_num == 0:
+            remove_fault_acl_rule()
+            self.logger.info("Get the error switch as 2")
+        elif recv1_num == 0 and recv2_num != 0:
+            remove_fault_acl_rule(sw_id=1)
+            self.logger.info("Get the error switch as 1")
+        else:
+            remove_fault_acl_rule(sw_id=0)
+            self.logger.info("Get the error switch as 0")
+        time.sleep(2)
+        # exit(0)
 
     def run(self):
-        Timer(10, add_fault_acl_rule).start()
+        Timer(10, add_fault_acl_rule, (0, )).start()
         while True:
+            start = time.time()
             self.analyze()
-            time.sleep(1)
+            end = time.time()
+            
+            # Method 1: Trigger based
+            if end - start < 1:
+                while time.time() < start + 1:
+                    ret = self.trigger_check()
+                    if not ret:
+                        self.solve_bug()
+
+            # Method 2: Periodic check
+            # if end - start < 1:
+            #     time.sleep(1 - (end - start))
+
             # self.remvoe_fault_acl_rule()
 
 """
