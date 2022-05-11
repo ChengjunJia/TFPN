@@ -158,24 +158,23 @@ def main():
     # PORT2 = 521 # The traffic of 521 will be dropped by misconfigured ACL
     # h0.cmd('iperf -s -p %d &' % PORT1)
     # h0.cmd('iperf -s -p %d &' % PORT2)
-    # h0.cmd('tcpdump -i eth0 -w h0_eth0.pcap &')
+    # h0.cmd('tcpdump -i eth0 -w h4_eth0_4Gb.pcap &')
     # h4.cmd('iperf -c 10.0.0.1 -u -b 25M -t 10 -i 0.5 -p %d > ./h4_iperf_c1.log &' % PORT1)
     # h4.cmd('iperf -c 10.0.0.1 -u -b 15M -t 10 -i 0.5 -p %d > ./h4_iperf_c2.log &' % PORT2)
-    h4.cmd('tcpreplay -i eth0 -l 100 -M 40 ./h0_eth0.pcap &') # replay the traffic
+    h4.cmd('tcpreplay -i eth0 -l 100 -M 40 ./h4_eth0_4Gb.pcap &') # replay the traffic
     h0.cmd('sar -n DEV 1 100 > ./h0_sar.log &')
 
+    print("Start the Testing...")
     h4.cmd("python3 ../packet/dctrace/trace_send.py -i 0 &")
     for i in range(1,4):
         h = net.get(topo.id2P4[i])
         h.cmd("python3 ../packet/dctrace/trace_receive.py -i %d &" % i)
 
-    print("Start the Testing...")
-
     for p in process_list:
         p.start()
 
-    CLI(net)
-    # time.sleep(10)
+    # CLI(net)
+    time.sleep(100)
     net.stop()
     
     exit(0)

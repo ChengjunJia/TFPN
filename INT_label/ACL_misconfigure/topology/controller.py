@@ -92,26 +92,33 @@ class Analyzer:
         else:
             remove_fault_acl_rule(sw_id=0)
             self.logger.info("Get the error switch as 0")
-        time.sleep(2)
+        # time.sleep(2)
         # exit(0)
 
     def run(self):
-        Timer(10, add_fault_acl_rule, (0, )).start()
+        Timer(10, add_fault_acl_rule, (2, )).start()
         while True:
             start = time.time()
             self.analyze()
             end = time.time()
             
             # Method 1: Trigger based
-            if end - start < 1:
-                while time.time() < start + 1:
+            PERIOD = 10
+            if end - start < PERIOD:
+                while time.time() < start + PERIOD:
                     ret = self.trigger_check()
                     if not ret:
                         self.solve_bug()
+                        r = self.redis_db_list[0] 
+                        trigger_num = r.get('trigger_check_num')
+                        trigger_num = int(trigger_num)
+                        self.last_trigger_num[0] = trigger_num
+
 
             # Method 2: Periodic check
-            # if end - start < 1:
-            #     time.sleep(1 - (end - start))
+            # PERIOD_CHECK = 5
+            # if end - start < PERIOD_CHECK:
+            #     time.sleep(PERIOD_CHECK - (end - start))
 
             # self.remvoe_fault_acl_rule()
 
