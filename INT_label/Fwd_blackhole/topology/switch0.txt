@@ -1,0 +1,1 @@
+table_clear MyIngress.ingress_acl

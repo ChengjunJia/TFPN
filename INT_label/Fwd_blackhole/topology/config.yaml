@@ -1,0 +1,3 @@
+redis_sock_file_addr: '/var/run/redis/redis-server.sock'
+redis_port: 6390
+trace_send_db: 15
