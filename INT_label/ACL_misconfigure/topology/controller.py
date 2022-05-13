@@ -3,6 +3,7 @@ import time
 import os
 import logging
 from threading import Timer
+import random
 
 def add_fault_acl_rule(sw_id=2):
     with open("./switch%s.txt" % (sw_id), "w") as f:
@@ -71,9 +72,11 @@ class Analyzer:
         sendDB = redis.Redis(unix_socket_path='/var/run/redis/redis-server.sock',port=REDIS_PORT,db=TRACE_SEND_DB)
         sendDB.incr('check_all_path')
         self.logger.info("Command the senders to send out packets")
-        while int(sendDB.get('check_all_path')) != 0:
-            self.logger.info("Still waiting...")
-        self.logger.info("The trace packets have been sent")
+        now = time.time()
+        while int(sendDB.get('check_all_path')) != 0 or float(sendDB.get('last_send_time')) < now:
+            # self.logger.info("Still waiting...")
+            continue
+        # self.logger.info("The trace packets have been sent")
         now = time.time()
         trigger_send_time = float(sendDB.get('last_send_time'))
         if now < trigger_send_time + 0.07:
@@ -92,11 +95,19 @@ class Analyzer:
         else:
             remove_fault_acl_rule(sw_id=0)
             self.logger.info("Get the error switch as 0")
+        r1.set('recv_trace_pkt_num', 0)
+        r2.set('recv_trace_pkt_num', 0)
         # time.sleep(2)
         # exit(0)
 
     def run(self):
-        Timer(10, add_fault_acl_rule, (2, )).start()
+        # Always insert random fault rule
+        # Timer(10, add_fault_acl_rule, (0, ) ).start()
+        # Timer(13, add_fault_acl_rule, (2, ) ).start()
+        for start_point in range(10, 200, 1):
+            start_time = start_point * 0.5 + random.random() * 0.25
+            fault_sw = random.randint(0, 2)
+            Timer(start_time, add_fault_acl_rule, (fault_sw,)).start()
         while True:
             start = time.time()
             self.analyze()

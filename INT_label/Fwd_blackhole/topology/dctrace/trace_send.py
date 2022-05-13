@@ -83,7 +83,7 @@ def main(src_ip, dst_ip):
     while True:
         s.send(default_pkt)
         db.incr("send_trace_pkt_num") # send a trace packet
-        db.set("last_send_time", time.time())
+        # db.set("last_send_time", time.time())
         t1 = time.time()
         while time.time() - t1 < trace_interval:
             if int(db.get("check_all_path")) > 0:

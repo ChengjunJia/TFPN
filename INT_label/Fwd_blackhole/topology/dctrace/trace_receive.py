@@ -52,6 +52,7 @@ def get_packet(pkt):
     logger.info("The layers are %s" % layers)
     for layer in layers:
         logger.info("The layer is %s" % layer.name)
+    # TODO: from the layer payload, get the trace information
     if trigger_event is not None:
         trigger_event.cancel()
     trigger_event = Timer(CHECK_THREAD_INTERVAL, trigger_check)

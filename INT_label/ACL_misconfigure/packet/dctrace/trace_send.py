@@ -71,12 +71,12 @@ def main(src_ip, dst_ip):
     while True:
         s.send(default_pkt)
         db.incr("send_trace_pkt_num") # send a trace packet
-        db.set("last_send_time", time.time())
+        # db.set("last_send_time", time.time())
         t1 = time.time()
         while time.time() - t1 < trace_interval:
             if int(db.get("check_all_path")) > 0:
                 logger.info("Check all path is set and we start to check all")
-                db.decr("check_all_path")
+                db.set("check_all_path", 0)
                 for i in range(0, 2):
                     pkt = get_pkt(src_ip, dst_ip, i)
                     s.send(pkt)

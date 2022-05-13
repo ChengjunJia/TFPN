@@ -81,8 +81,9 @@ class Analyzer:
         self.logger.info("The trace packets have been sent")
         now = time.time()
         trigger_send_time = float(sendDB.get('last_send_time'))
-        if now < trigger_send_time + 0.07:
-            time.sleep(trigger_send_time + 0.07 - now)
+        WAIT_INTERVAL = 0.07
+        if now < trigger_send_time + WAIT_INTERVAL:
+            time.sleep(trigger_send_time + WAIT_INTERVAL - now)
             # wait for 50ms to ensure the trigger packets reached
         r1 = self.redis_db_list[1]
         r2 = self.redis_db_list[2]
